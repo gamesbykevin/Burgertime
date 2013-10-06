@@ -13,15 +13,15 @@ import java.awt.image.BufferedImage;
 public class Shared 
 {
     //these dimensions is the size of the game window the user will see
-    public static final int INITIAL_WIDTH  = 550;
-    public static final int INITIAL_HEIGHT = 400;
+    public static final int INITIAL_WIDTH  = 500;
+    public static final int INITIAL_HEIGHT = 500;
     
     //the game is programmed in these dimensions
-    public static final int ORIGINAL_WIDTH  = 550;
-    public static final int ORIGINAL_HEIGHT = 400;
+    public static final int ORIGINAL_WIDTH  = 500;
+    public static final int ORIGINAL_HEIGHT = 500;
     
     //show UPS/FPS counters
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
     
     //how many updates per second, controls speed of game
     public static final int DEFAULT_UPS = 60;
@@ -30,7 +30,7 @@ public class Shared
     public static final int DEFAULT_FPS = 60;
     
     //what is the name of our game
-    public static final String GAME_NAME = "Boomshine";
+    public static final String GAME_NAME = "Burger Time";
     
     //blank cursor created here to hide the mouse cursor
     public static final Cursor CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "blank cursor");

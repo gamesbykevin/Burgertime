@@ -21,16 +21,19 @@ public class Resources implements IResources
     //are we done loading resources
     private boolean loading = true;
     
+    //all audio containers here
     private enum TypeAudio
     {
         GameAudio, MenuAudio
     }
     
+    //all image containers here
     private enum TypeImage
     {
-        MenuImage
+        GameImage, MenuImage
     }
     
+    //all fonts here
     private enum TypeFont
     {
         AllFonts
@@ -53,6 +56,7 @@ public class Resources implements IResources
         
         images = new HashMap<>();
         images.put(TypeImage.MenuImage, new MenuImage());
+        images.put(TypeImage.GameImage, new GameImage());
         
         fonts = new HashMap<>();
         fonts.put(TypeFont.AllFonts, new AllFonts());
@@ -180,6 +184,16 @@ public class Resources implements IResources
     public Image getMenuImage(final Object key)
     {
         return images.get(TypeImage.MenuImage).get(key);
+    }
+    
+    /**
+     * Get the specified Image from the Game list
+     * @param key
+     * @return Image
+     */
+    public Image getGameImage(final Object key)
+    {
+        return images.get(TypeImage.GameImage).get(key);
     }
     
     public Audio getMenuAudio(final Object key)

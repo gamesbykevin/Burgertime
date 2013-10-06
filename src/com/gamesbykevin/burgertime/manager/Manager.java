@@ -12,6 +12,11 @@ import com.gamesbykevin.burgertime.shared.IElement;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.Random;
+
+import com.gamesbykevin.burgertime.resources.*;
+
+import com.gamesbykevin.burgertime.characters.Hero;
 
 /**
  * The parent class that contains all of the game elements
@@ -19,6 +24,16 @@ import java.awt.image.BufferedImage;
  */
 public final class Manager implements Disposable, IElement
 {
+    //seed used to generate random numbers
+    private final long seed = System.nanoTime();
+    
+    //random number generator object
+    private Random random;
+    
+    private Hero hero;
+    
+    private Board board;
+    
     /**
      * Constructor for Manager, this is the point where we load any menu option configurations
      * @param engine
@@ -29,6 +44,13 @@ public final class Manager implements Disposable, IElement
         //the mode of game play
         //this.mode = Mode.values()[engine.getMenu().getOptionSelectionIndex(LayerKey.Options, OptionKey.Mode)];
         
+        //our random number generator
+        random = new Random(seed);
+        
+        this.hero = new Hero();
+        this.hero.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+        
+        this.board = new Board(engine);
     }
     
     /**
@@ -49,7 +71,7 @@ public final class Manager implements Disposable, IElement
     @Override
     public void update(final Engine engine) throws Exception
     {
-        
+        this.hero.update(engine);
     }
     
     /**
@@ -59,6 +81,8 @@ public final class Manager implements Disposable, IElement
     @Override
     public void render(final Graphics graphics)
     {
+        this.hero.render(graphics);
         
+        this.board.render(graphics);
     }
 }

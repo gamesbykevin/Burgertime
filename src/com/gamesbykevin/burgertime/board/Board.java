@@ -1,13 +1,16 @@
 package com.gamesbykevin.burgertime.board;
 
-import com.gamesbykevin.burgertime.resources.GameAudio;
 import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.burgertime.engine.Engine;
+import com.gamesbykevin.burgertime.resources.GameAudio;
+import com.gamesbykevin.burgertime.resources.GameImage;
 import com.gamesbykevin.burgertime.shared.IElement;
-import java.awt.Color;
+import com.gamesbykevin.burgertime.levelobject.LevelObject;
+import com.gamesbykevin.burgertime.levelobject.LevelObject.Type;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -20,20 +23,60 @@ import java.util.Random;
  */
 public class Board extends Sprite implements Disposable, IElement
 {
-    //seed used to generate random numbers
-    private final long seed = System.nanoTime();
+    List <LevelObject> objects;
     
-    //random number generator object
-    private Random random;
+    //dimensions of the board
+    private static final int COLUMNS = 17;
+    private static final int ROWS = 13;
     
-    //each puzzle is 13 columns/rows across
-    private static final int DIMENSIONS = 13;
-    
-    public Board()
+    public Board(final Engine engine)
     {
-        //our random number generator
-        random = new Random(seed);
+        objects = new ArrayList<>();
+        
+        for (int row = 0; row < ROWS; row++)
+        {
+            for (int col = 0; col < COLUMNS; col++)
+            {
+                LevelObject obj;
+                
+                //bottom row so add burger container
+                if (row == ROWS - 1)
+                {
+                    if (col % 3 == 0)
+                    {
+                        obj = new LevelObject(Type.BurgerContainer);
+                        obj.setLocation(col * 38, (row * 20));
+                        obj.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+                        objects.add(obj);
+                    }
+                }
+                else
+                {
+                    //if the row is an even number
+                    if (row % 2 == 0)
+                    {
+                        obj = new LevelObject(Type.Platform);
+                        obj.setLocation(col * 24, (row * 20) + 20);
+                        obj.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+                        objects.add(obj);
+                    }
+                    else
+                    {
+                    }
+
+                    if (col % 2 != 0)
+                    {
+                        obj = new LevelObject(Type.Ladder);
+                        obj.setLocation(col * 20, (row * 20));
+                        obj.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+                        objects.add(obj);
+                    }
+                    
+                }
+            }
+        }
     }
+    
     
     @Override
     public void dispose()
@@ -50,6 +93,9 @@ public class Board extends Sprite implements Disposable, IElement
     @Override
     public void render(final Graphics graphics)
     {
-        
+        for (LevelObject obj : objects)
+        {
+            obj.draw(graphics);
+        }
     }
 }
