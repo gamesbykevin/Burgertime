@@ -2,11 +2,14 @@ package com.gamesbykevin.burgertime.characters;
 
 import com.gamesbykevin.framework.input.Keyboard;
 
+import com.gamesbykevin.burgertime.board.Board;
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
 
 import java.awt.event.KeyEvent;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +43,9 @@ public final class Hero extends Character implements ICharacter
             super.resetVelocity();
         }
         
+        //check for collision
+        checkCollision(engine.getManager().getBoard());
+        
         //update sprite location based on velocity
         super.update();
         
@@ -61,6 +67,73 @@ public final class Hero extends Character implements ICharacter
             }
         }
         
+        //manage the current animation
+        checkAnimation();
+        
+        //update sprite sheet
+        getSpriteSheet().update(engine.getMain().getTime());
+    }
+    
+    private void checkCollision(final Board board)
+    {
+        if (!hasVelocity())
+            return;
+        
+        //get original location
+        final Point original = super.getPoint();
+        
+        super.update();
+        
+        final int width = (int)(getWidth() * .5);
+        final int height = getSpeed() * 4;
+        
+        Rectangle feet = new Rectangle((int)(getX() + (getWidth() / 2) - (width / 2)), (int)(getY() + getHeight() - height), width, height);
+        
+        final LevelObject ladder   = board.getCollision(Type.Ladder,   feet);
+        final LevelObject platform = board.getCollision(Type.Platform, feet);
+        
+        if (ladder == null && platform == null)
+        {
+            super.resetVelocity();
+            
+            //reset location back
+            super.setLocation(original);
+        }
+        else
+        {
+            if (super.hasVelocityX())
+            {
+                if (platform != null)
+                {
+                    super.setX(original.x);
+                    super.setY(platform.getY() + platform.getHeight() - super.getHeight());
+                }
+                else
+                {
+                    super.resetVelocityX();
+                    super.setX(original.x);
+                }
+            }
+            
+            if (super.hasVelocityY())
+            {
+                if (ladder != null)
+                {
+                    //also center position on ladder
+                    super.setX(ladder.getX() + (ladder.getWidth() / 2) - (super.getWidth() / 2));
+                    super.setY(original.y);
+                }
+                else
+                {
+                    super.resetVelocityY();
+                    super.setY(original.y);
+                }
+            }
+        }
+    }
+    
+    private void checkAnimation()
+    {
         //if we are attacking and the animation has finished
         if (isAttacking() && getSpriteSheet().hasFinished())
         {
@@ -83,9 +156,6 @@ public final class Hero extends Character implements ICharacter
                     break;
             }
         }
-        
-        //update sprite sheet
-        super.getSpriteSheet().update(engine.getMain().getTime());
     }
     
     private void manageInput(Keyboard keyboard) throws Exception

@@ -47,10 +47,18 @@ public final class Manager implements Disposable, IElement
         //our random number generator
         random = new Random(seed);
         
+        System.out.println("Seed: " + seed);
+        
         this.hero = new Hero();
         this.hero.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+        this.hero.setLocation(0, 1);
         
         this.board = new Board(engine);
+    }
+    
+    public Board getBoard()
+    {
+        return this.board;
     }
     
     /**
@@ -81,8 +89,8 @@ public final class Manager implements Disposable, IElement
     @Override
     public void render(final Graphics graphics)
     {
-        this.hero.render(graphics);
-        
         this.board.render(graphics);
+        
+        this.hero.render(graphics);
     }
 }

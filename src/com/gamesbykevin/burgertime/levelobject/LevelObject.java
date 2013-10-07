@@ -47,7 +47,7 @@ public class LevelObject extends Sprite implements IElement
         }
     }
     
-    protected Type getType()
+    public Type getType()
     {
         return (Type)super.getSpriteSheet().getCurrent();
     }
@@ -108,12 +108,12 @@ public class LevelObject extends Sprite implements IElement
                 
             case Ladder:
                 animation = new Animation();
-                animation.add(new Rectangle(194, 328, 20, 16), 0);
+                animation.add(new Rectangle(199, 309, 10, 19), 0);
                 break;
                 
             case Platform:
                 animation = new Animation();
-                animation.add(new Rectangle(0, 342, 24, 6), 0);
+                animation.add(new Rectangle(96, 325, 24, 2), 0);
                 break;
                 
             case Salt:
