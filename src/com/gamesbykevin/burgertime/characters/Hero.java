@@ -22,6 +22,9 @@ public final class Hero extends Character implements ICharacter
     //the salt the hero can dump on the enemies
     private List<LevelObject> projectiles;
     
+    //the feet area of the player used for collision detection with the board
+    private Rectangle feet;
+    
     public Hero()
     {
         super(Type.Hero);
@@ -76,18 +79,27 @@ public final class Hero extends Character implements ICharacter
     
     private void checkCollision(final Board board)
     {
+        //if we are not moving don't bother checking for board collision
         if (!hasVelocity())
             return;
         
         //get original location
         final Point original = super.getPoint();
         
+        //update location temporary
         super.update();
         
-        final int width = (int)(getWidth() * .5);
-        final int height = getSpeed() * 4;
+        final int width  = (int)(getWidth() * .5);
+        final int height = (int)(getSpeed() * 5);
         
-        Rectangle feet = new Rectangle((int)(getX() + (getWidth() / 2) - (width / 2)), (int)(getY() + getHeight() - height), width, height);
+        if (feet == null)
+            feet = new Rectangle();
+        
+        //update the feet location
+        this.feet.x = (int)(getX() + (getWidth() / 2) - (width / 2));
+        this.feet.y = (int)(getY() + getHeight() - height);
+        this.feet.width  = width;
+        this.feet.height = height;
         
         final LevelObject ladder   = board.getCollision(Type.Ladder,   feet);
         final LevelObject platform = board.getCollision(Type.Platform, feet);
@@ -105,6 +117,7 @@ public final class Hero extends Character implements ICharacter
             {
                 if (platform != null)
                 {
+                    //correct y cooridnate while walking on platform
                     super.setX(original.x);
                     super.setY(platform.getY() + platform.getHeight() - super.getHeight());
                 }
@@ -130,6 +143,13 @@ public final class Hero extends Character implements ICharacter
                 }
             }
         }
+        
+        board.checkCollisionFood(this);
+    }
+    
+    public Rectangle getFeet()
+    {
+        return this.feet;
     }
     
     private void checkAnimation()

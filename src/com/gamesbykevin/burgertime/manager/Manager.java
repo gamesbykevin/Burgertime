@@ -28,7 +28,7 @@ public final class Manager implements Disposable, IElement
     private final long seed = System.nanoTime();
     
     //random number generator object
-    private Random random;
+    public final Random random;
     
     private Hero hero;
     
@@ -45,7 +45,7 @@ public final class Manager implements Disposable, IElement
         //this.mode = Mode.values()[engine.getMenu().getOptionSelectionIndex(LayerKey.Options, OptionKey.Mode)];
         
         //our random number generator
-        random = new Random(seed);
+        this.random = new Random(seed);
         
         System.out.println("Seed: " + seed);
         
@@ -53,12 +53,17 @@ public final class Manager implements Disposable, IElement
         this.hero.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
         this.hero.setLocation(0, 1);
         
-        this.board = new Board(engine);
+        this.board = new Board(engine, random);
     }
     
     public Board getBoard()
     {
         return this.board;
+    }
+    
+    public Random getRandom()
+    {
+        return this.random;
     }
     
     /**
@@ -80,6 +85,8 @@ public final class Manager implements Disposable, IElement
     public void update(final Engine engine) throws Exception
     {
         this.hero.update(engine);
+        
+        this.board.update(engine);
     }
     
     /**

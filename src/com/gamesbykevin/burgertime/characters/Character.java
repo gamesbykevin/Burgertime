@@ -39,16 +39,16 @@ public class Character extends LevelObject
      */
     public enum Speed
     {
-        SLOW(1), MEDIUM(2), FAST(3);
+        SLOW(1), MEDIUM(1.5), FAST(2);
         
-        private Speed(final int velocity)
+        private Speed(final double velocity)
         {
             this.velocity = velocity;
         }
         
-        private final int velocity;
+        private final double velocity;
         
-        public int getVelocity()
+        public double getVelocity()
         {
             return this.velocity;
         }
@@ -63,9 +63,6 @@ public class Character extends LevelObject
         
         //set default width/height
         super.setDimensions(DIMENSION, DIMENSION);
-        
-        //setup animations
-        this.setupAnimations(type);
     }
     
     protected void setSpeed(final Speed speed)
@@ -73,7 +70,7 @@ public class Character extends LevelObject
         this.speed = speed;
     }
     
-    protected int getSpeed()
+    protected double getSpeed()
     {
         return speed.getVelocity();
     }
@@ -120,7 +117,7 @@ public class Character extends LevelObject
     }
     
     @Override
-    protected void setupAnimations(final Type type)
+    protected void setupAnimations(final Type type) throws Exception
     {
         //object used to setup all our animation
         Animation animation;
@@ -170,6 +167,9 @@ public class Character extends LevelObject
             case EnemyOnion:
                 setupAnimations(0, 205);
                 break;
+                
+            default:
+                throw new Exception("Type not setup here");
         }
         
         //this is the default state

@@ -9,6 +9,9 @@ import com.gamesbykevin.framework.util.TimerCollection;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Any object on the screen is a level object
  * @author GOD
@@ -67,40 +70,10 @@ public class LevelObject extends Sprite implements IElement
      */
     protected void setupAnimations(final Type type) throws Exception
     {
-        Animation animation = null;
+        final Animation animation;
         
         switch(type)
         {
-            case BurgerTop:
-                animation = new Animation();
-                animation.add(new Rectangle(85, 237, 32, 8), 0);
-                break;
-
-            case BurgerBottom:
-                animation = new Animation();
-                animation.add(new Rectangle(117, 237, 32, 8), 0);
-                break;
-                
-            case Meat:
-                animation = new Animation();
-                animation.add(new Rectangle(149, 237, 32, 8), 0);
-                break;
-                
-            case Lettuce:
-                animation = new Animation();
-                animation.add(new Rectangle(181, 237, 32, 8), 0);
-                break;
-                
-            case Tomato:
-                animation = new Animation();
-                animation.add(new Rectangle(213, 237, 32, 8), 0);
-                break;
-                
-            case Cheese:
-                animation = new Animation();
-                animation.add(new Rectangle(245, 237, 32, 8), 0);
-                break;
-                
             case BurgerContainer:
                 animation = new Animation();
                 animation.add(new Rectangle(245, 335, 38, 9), 0);
@@ -128,6 +101,11 @@ public class LevelObject extends Sprite implements IElement
                 throw new Exception("Type not setup here");
         }
         
+        setDefaults(animation, type);
+    }
+    
+    protected void setDefaults(final Animation animation, final Type type)
+    {
         //add the animation
         getSpriteSheet().add(animation, type);
         
