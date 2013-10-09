@@ -41,18 +41,18 @@ public class Board extends Sprite implements Disposable, IElement
     
     //dimensions of the board
     private static final int COLUMNS = 17;
-    private static final int ROWS = 13;
+    private static final int ROWS = 14;
     
     //rows where the characters can move amungst
     private static final int VALID_ROWS = 10;
     
     //the number of rows to reserve for food
-    private static final int FOOD_ROWS = Food.getTypeFood().size();
+    private static final int FOOD_COUNT = Food.getTypeFood().size();
     
     //list of valid rows used to generate random level
     final List<Integer> validRows;
     
-    //dimensions of each cell
+    //dimensions of each cell on the board
     private static final int WIDTH = 24;
     private static final int HEIGHT = 20;
     
@@ -125,10 +125,10 @@ public class Board extends Sprite implements Disposable, IElement
         }
         
         //temporary food object
-        Food object;
+        Food food;
         
         //get all food types that will be placed on the board
-        final List<Type> food = Food.getTypeFood();
+        final List<Type> foodTypes = Food.getTypeFood();
         
         //now randomly place the food pieces
         for (int col = 0; col < COLUMNS; col++)
@@ -145,11 +145,11 @@ public class Board extends Sprite implements Disposable, IElement
                     final int row = validRows.get(index);
                     
                     //add food
-                    object = new Food(food.get(index));
-                    object.setLocation(((col - 2) * WIDTH) + (WIDTH / 2) - (object.getWidth() / 2), (row * HEIGHT) + HEIGHT - object.getHeight());
-                    object.setCol(col - 2);
-                    object.setRow(row);
-                    foods.add(object);
+                    food = new Food(foodTypes.get(index));
+                    food.setLocation(((col - 2) * WIDTH) + (WIDTH / 2) - (food.getWidth() / 2), (row * HEIGHT) + HEIGHT - food.getHeight());
+                    food.setCol(col - 2);
+                    food.setRow(row);
+                    foods.add(food);
                 }
             }
         }
@@ -157,13 +157,9 @@ public class Board extends Sprite implements Disposable, IElement
         //then randomly remove unused platforms and some of the ladders
     }
     
-    public void checkCollisionFood(final Hero hero)
+    public List<Food> getFoods()
     {
-        //check every piece of food for collision
-        for (Food food : foods)
-        {
-            food.checkCollision(hero);
-        }
+        return this.foods;
     }
     
     private void resetValidRows(final Random random)
@@ -178,7 +174,7 @@ public class Board extends Sprite implements Disposable, IElement
         }
         
         //remove random rows until we reach the amount needed to reserve
-        while(validRows.size() > FOOD_ROWS)
+        while(validRows.size() > FOOD_COUNT)
         {
             //get random index
             final int index = random.nextInt(validRows.size());
@@ -208,34 +204,123 @@ public class Board extends Sprite implements Disposable, IElement
     @Override
     public void update(final Engine engine) throws Exception
     {
-        for (Food food : foods)
+        for (int index = 0; index < foods.size(); index++)
         {
-            if (food.hasVelocityY())
-            {
-                //update location based on current velocity set
-                food.update();
-                
-                //check if hit platform, container, or another food
-                final LevelObject platform = this.getCollision(Type.Platform, food.getRectangle());
-                
-                //if platform exists then we hit one and make sure they are in the same column
-                if (platform != null)
-                {
-                    if (food.getCol() == platform.getCol())
-                    {
-                        food.resetVelocityY();
-                        food.resetDrop();
-                    }
-                }
-            }
-            else
+            //get the current piece of food
+            final Food food = foods.get(index);
+            
+            //if the food isn't falling check if gravity needs to be applied
+            if (!food.hasVelocity())
             {
                 //if the food qualifies to drop
                 if (food.hasDrop())
                 {
-                    //set the row below as the new location of the food
-                    food.setRow(food.getRow() + 1);
+                    //set drop speed
+                    food.setVelocityY(Speed.MEDIUM.getVelocity());
+                }
+                
+                //skip to next object
+                continue;
+            }
+            
+            //update location based on current velocity set
+            food.update();
+
+            //check if hit platform
+            final LevelObject platform = this.getCollision(Type.Platform, food.getMiddle());
+
+            //if platform exists then we hit one 
+            if (platform != null)
+            {
+                //we also want to make sure the platform is below the current food row and the columns are the same
+                if (food.getCol() == platform.getCol() && platform.getRow() > food.getRow())
+                {
+                    //set the new row for food
+                    food.setRow(platform.getRow());
+
+                    //no longer drop so stop velocity
+                    food.resetVelocity();
+
+                    //reset food parts
+                    food.resetDrop();
+
+                    //check if any other pieces of food need to be dropped
+                    checkDrop(food);
                     
+                    //skip to the next object
+                    continue;
+                }
+            }
+            
+            //now check if hit another piece of food in the burger container
+            for (Food tmp : foods)
+            {
+                //don't check the same food piece, or a piece in a different column, or a piece that is not at the bottom
+                if (food.getId() == tmp.getId() || food.getCol() != tmp.getCol() || tmp.getRow() <= VALID_ROWS)
+                    continue;
+                
+                if (tmp.getRectangle().intersects(food.getRectangle()))
+                {
+                    //set the new row
+                    food.setRow(tmp.getRow());
+                    
+                    //no longer drop piece
+                    food.resetVelocity();
+                    
+                    //reset food parts
+                    food.resetDrop();
+                    
+                    //exit loop
+                    break;
+                }
+            }
+            
+            //check if hit burger container
+            LevelObject container = this.getCollision(Type.BurgerContainer, food.getRectangle());
+
+            //if container exists then we hit it
+            if (container != null)
+            {
+                //set the new row for food
+                food.setRow(container.getRow());
+
+                //no longer drop so stop velocity
+                food.resetVelocity();
+
+                //reset food parts
+                food.resetDrop();
+                
+                //skip to the next object
+                continue;
+            }
+        }
+    }
+    
+    public boolean hasCompleted()
+    {
+        for (Food food : foods)
+        {
+            //if the food row is not at the bottom yet
+            if (food.getRow() <= VALID_ROWS)
+                return false;
+        }
+        return true;
+    }
+    
+    private void checkDrop(final Food tmp)
+    {
+        for (Food food : foods)
+        {
+            //make sure we aren't comparing the same object
+            if (food.getId() == tmp.getId())
+                continue;
+            
+            //if the pieces of food have the same column and row
+            if (food.getCol() == tmp.getCol() && food.getRow() == tmp.getRow())
+            {
+                //if we are still in range of the game board apply gravity
+                if (tmp.getRow() <= VALID_ROWS)
+                {
                     //set drop speed
                     food.setVelocityY(Speed.MEDIUM.getVelocity());
                 }
@@ -269,6 +354,7 @@ public class Board extends Sprite implements Disposable, IElement
             object.draw(graphics, image);
         }
         
+        //draw all the food pieces
         for (Food food : foods)
         {
             food.render(graphics, image);

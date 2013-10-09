@@ -16,6 +16,8 @@ public class Character extends LevelObject
 {
     private static final long DELAY_DEFAULT = TimerCollection.toNanoSeconds(125L);
     
+    private static final long DELAY_DEFAULT_ENEMY = TimerCollection.toNanoSeconds(250L);
+    
     //all characters have the same width/height
     protected static final int DIMENSION = 20;
     
@@ -188,61 +190,64 @@ public class Character extends LevelObject
         
         //setup Move South
         animation = new Animation();
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         animation.setLoop(true);
         getSpriteSheet().add(animation, State.MoveSouth);
 
         //setup Move North
         animation = new Animation();
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         animation.setLoop(true);
         getSpriteSheet().add(animation, State.MoveNorth);
 
         //setup Move East
         animation = new Animation();
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         animation.setLoop(true);
         getSpriteSheet().add(animation, State.MoveEast);
 
         //setup Move West
         animation = new Animation();
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         animation.setLoop(true);
         getSpriteSheet().add(animation, State.MoveWest);
 
         //setup Death
         animation = new Animation();
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         getSpriteSheet().add(animation, State.Die);
 
         //setup stunned
         animation = new Animation();
         startX += 100;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
         animation.setLoop(true);
         getSpriteSheet().add(animation, State.Stunned);
         
         //set the default
         getSpriteSheet().setCurrent(State.MoveSouth);
+        
+        //pause animation at first also
+        getSpriteSheet().setPause(true);
     }
 }

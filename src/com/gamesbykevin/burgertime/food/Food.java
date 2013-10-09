@@ -26,6 +26,12 @@ public class Food extends LevelObject
     //each piece of food will be separate into 4 parts
     private static final int PARTS = 4;
     
+    //middle area of food, since food is wide enough to cover many paltforms
+    private Rectangle middle;
+    
+    //each food object is unique
+    private long id = System.nanoTime();
+    
     public Food(final Type type)
     {
         super(type);
@@ -49,6 +55,11 @@ public class Food extends LevelObject
         }
     }
     
+    public long getId()
+    {
+        return this.id;
+    }
+    
     public static List<Type> getTypeFood()
     {
         List<Type> food = new ArrayList<>();
@@ -60,7 +71,7 @@ public class Food extends LevelObject
             if (type == Type.BurgerTop || type == Type.BurgerBottom)
                 continue;
             
-            if (isFood(type))
+            if (isType(type))
                 food.add(type);
         }
         
@@ -74,7 +85,7 @@ public class Food extends LevelObject
      * @param type
      * @return boolean true if food, false otherwise
      */
-    public static boolean isFood(final Type type)
+    public static boolean isType(final Type type)
     {
         switch (type)
         {
@@ -89,6 +100,21 @@ public class Food extends LevelObject
             default:
                 return false;
         }
+    }
+    
+    public Rectangle getMiddle()
+    {
+        if (this.middle == null)
+            middle = new Rectangle();
+        
+        final int width = (int)(getWidth() * .25);
+
+        this.middle.x = (int)(getX() + (getWidth() / 2) - (width / 2));
+        this.middle.y = (int)(getY());
+        this.middle.width = width;
+        this.middle.height = (int)getHeight();
+        
+        return this.middle;
     }
     
     /**

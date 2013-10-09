@@ -4,6 +4,7 @@ import com.gamesbykevin.framework.input.Keyboard;
 
 import com.gamesbykevin.burgertime.board.Board;
 import com.gamesbykevin.burgertime.engine.Engine;
+import com.gamesbykevin.burgertime.food.Food;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
 
 import java.awt.event.KeyEvent;
@@ -99,7 +100,7 @@ public final class Hero extends Character implements ICharacter
         this.feet.x = (int)(getX() + (getWidth() / 2) - (width / 2));
         this.feet.y = (int)(getY() + getHeight() - height);
         this.feet.width  = width;
-        this.feet.height = height;
+        this.feet.height = (height * 2);
         
         final LevelObject ladder   = board.getCollision(Type.Ladder,   feet);
         final LevelObject platform = board.getCollision(Type.Platform, feet);
@@ -144,7 +145,12 @@ public final class Hero extends Character implements ICharacter
             }
         }
         
-        board.checkCollisionFood(this);
+        //check all food for collision
+        for (Food food : board.getFoods())
+        {
+            //check every piece of food for collision
+            food.checkCollision(this);
+        }
     }
     
     public Rectangle getFeet()

@@ -12,11 +12,15 @@ import com.gamesbykevin.burgertime.shared.IElement;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import com.gamesbykevin.burgertime.resources.*;
 
+import com.gamesbykevin.burgertime.characters.Enemy;
 import com.gamesbykevin.burgertime.characters.Hero;
+import com.gamesbykevin.burgertime.levelobject.LevelObject;
 
 /**
  * The parent class that contains all of the game elements
@@ -30,9 +34,17 @@ public final class Manager implements Disposable, IElement
     //random number generator object
     public final Random random;
     
+    //our Hero object
     private Hero hero;
     
+    //our game board object
     private Board board;
+    
+    //list of enemies
+    private List<Enemy> enemies;
+    
+    //enemy limit
+    private final int limit = 3;
     
     /**
      * Constructor for Manager, this is the point where we load any menu option configurations
@@ -49,16 +61,26 @@ public final class Manager implements Disposable, IElement
         
         System.out.println("Seed: " + seed);
         
+        //create our hero object
         this.hero = new Hero();
         this.hero.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
         this.hero.setLocation(0, 1);
         
+        //create new game board
         this.board = new Board(engine, random);
+        
+        //create empty list for the enemies
+        this.enemies = new ArrayList<>();
     }
     
     public Board getBoard()
     {
         return this.board;
+    }
+    
+    public Hero getHero()
+    {
+        return this.hero;
     }
     
     public Random getRandom()
@@ -87,6 +109,23 @@ public final class Manager implements Disposable, IElement
         this.hero.update(engine);
         
         this.board.update(engine);
+        
+        //if the number of enemies is less than our limit
+        while (enemies.size() < limit)
+        {
+            //create random enemy
+            Enemy enemy = new Enemy(Enemy.getRandom(random));
+            
+            enemy.setLocation(0, 1);
+            enemy.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+            
+            enemies.add(enemy);
+        }
+        
+        for (Enemy enemy : enemies)
+        {
+            enemy.update(engine);
+        }
     }
     
     /**
@@ -99,5 +138,10 @@ public final class Manager implements Disposable, IElement
         this.board.render(graphics);
         
         this.hero.render(graphics);
+        
+        for (Enemy enemy : enemies)
+        {
+            enemy.render(graphics);
+        }
     }
 }
