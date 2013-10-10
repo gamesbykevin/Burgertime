@@ -14,8 +14,8 @@ import java.awt.Rectangle;
  */
 public class Character extends LevelObject
 {
+    //time delays
     private static final long DELAY_DEFAULT = TimerCollection.toNanoSeconds(125L);
-    
     private static final long DELAY_DEFAULT_ENEMY = TimerCollection.toNanoSeconds(250L);
     
     //all characters have the same width/height
@@ -41,7 +41,7 @@ public class Character extends LevelObject
      */
     public enum Speed
     {
-        SLOW(1), MEDIUM(1.5), FAST(2);
+        SLOW(.5), MEDIUM(1.25), FAST(2);
         
         private Speed(final double velocity)
         {
@@ -56,8 +56,8 @@ public class Character extends LevelObject
         }
     }
     
-    //the characters speed, and the default is slow
-    private Speed speed = Speed.SLOW;
+    //the characters speed
+    private Speed speed;
     
     public Character(final Type type)
     {
@@ -65,6 +65,9 @@ public class Character extends LevelObject
         
         //set default width/height
         super.setDimensions(DIMENSION, DIMENSION);
+        
+        //set the speed
+        setSpeed(Speed.SLOW);
     }
     
     protected void setSpeed(final Speed speed)
@@ -247,7 +250,7 @@ public class Character extends LevelObject
         //set the default
         getSpriteSheet().setCurrent(State.MoveSouth);
         
-        //pause animation at first also
-        getSpriteSheet().setPause(true);
+        //no pause animation at first also
+        getSpriteSheet().setPause(false);
     }
 }

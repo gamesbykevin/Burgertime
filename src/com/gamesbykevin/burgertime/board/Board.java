@@ -307,6 +307,19 @@ public class Board extends Sprite implements Disposable, IElement
         return true;
     }
     
+    /**
+     * Update the level object column, row based on their x,y coordinate
+     * @param object 
+     */
+    public void updateLocation(final LevelObject object)
+    {
+        final int col = (int)(object.getX() / WIDTH);
+        final int row = (int)(object.getY() / HEIGHT);
+        
+        object.setCol(col);
+        object.setRow(row);
+    }
+    
     private void checkDrop(final Food tmp)
     {
         for (Food food : foods)

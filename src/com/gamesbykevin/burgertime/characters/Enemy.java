@@ -1,5 +1,7 @@
 package com.gamesbykevin.burgertime.characters;
 
+import com.gamesbykevin.framework.base.Cell;
+
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.levelobject.LevelObject.Type;
 
@@ -13,9 +15,13 @@ import java.util.Random;
  */
 public final class Enemy extends Character implements ICharacter
 {
+    private List<Cell> steps;
+    
     public Enemy(final Type type)
     {
         super(type);
+        
+        this.steps = new ArrayList<>();
     }
     
     public static Type getRandom(final Random random)
@@ -52,7 +58,52 @@ public final class Enemy extends Character implements ICharacter
     {
         super.update();
         
+        if (getVelocityX() > 0)
+            getSpriteSheet().setCurrent(State.MoveEast);
+
+        if (getVelocityX() < 0)
+            getSpriteSheet().setCurrent(State.MoveWest);
+        
+        if (getVelocityY() > 0)
+            getSpriteSheet().setCurrent(State.MoveSouth);
+
+        if (getVelocityY() < 0)
+            getSpriteSheet().setCurrent(State.MoveNorth);
+        
         //update sprite sheet
         getSpriteSheet().update(engine.getMain().getTime());
+        
+        //if there are no steps calculate them
+        if (steps.isEmpty())
+        {
+            if (super.getX() < engine.getManager().getHero().getX())
+            {
+                super.resetVelocity();
+                super.setVelocityX(super.getSpeed());
+            }
+            
+            if (super.getX() > engine.getManager().getHero().getX())
+            {
+                super.resetVelocity();
+                super.setVelocityX(-super.getSpeed());
+            }
+            
+            if (super.getY() < engine.getManager().getHero().getY())
+            {
+                super.resetVelocity();
+                super.setVelocityY(super.getSpeed());
+                
+            }
+            
+            if (super.getY() > engine.getManager().getHero().getY())
+            {
+                super.resetVelocity();
+                super.setVelocityY(-super.getSpeed());
+            }
+        }
+        else
+        {
+            
+        }
     }
 }

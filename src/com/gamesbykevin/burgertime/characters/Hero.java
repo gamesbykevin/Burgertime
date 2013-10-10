@@ -31,6 +31,8 @@ public final class Hero extends Character implements ICharacter
         super(Type.Hero);
         
         this.projectiles = new ArrayList<>();
+        
+        setSpeed(Speed.MEDIUM);
     }
     
     @Override
@@ -76,6 +78,9 @@ public final class Hero extends Character implements ICharacter
         
         //update sprite sheet
         getSpriteSheet().update(engine.getMain().getTime());
+        
+        //set the heroes correct column, row
+        engine.getManager().getBoard().updateLocation(this);
     }
     
     private void checkCollision(final Board board)
@@ -85,13 +90,14 @@ public final class Hero extends Character implements ICharacter
             return;
         
         //get original location
-        final Point original = super.getPoint();
+        final double originalX = getX();
+        final double originalY = getY();
         
         //update location temporary
         super.update();
         
         final int width  = (int)(getWidth() * .5);
-        final int height = (int)(getSpeed() * 5);
+        final int height = (int)(getSpeed() *  5);
         
         if (feet == null)
             feet = new Rectangle();
@@ -107,10 +113,12 @@ public final class Hero extends Character implements ICharacter
         
         if (ladder == null && platform == null)
         {
+            //reset the speed
             super.resetVelocity();
             
             //reset location back
-            super.setLocation(original);
+            super.setX(originalX);
+            super.setY(originalY);
         }
         else
         {
@@ -119,13 +127,13 @@ public final class Hero extends Character implements ICharacter
                 if (platform != null)
                 {
                     //correct y cooridnate while walking on platform
-                    super.setX(original.x);
+                    super.setX(originalX);
                     super.setY(platform.getY() + platform.getHeight() - super.getHeight());
                 }
                 else
                 {
                     super.resetVelocityX();
-                    super.setX(original.x);
+                    super.setX(originalX);
                 }
             }
             
@@ -135,12 +143,12 @@ public final class Hero extends Character implements ICharacter
                 {
                     //also center position on ladder
                     super.setX(ladder.getX() + (ladder.getWidth() / 2) - (super.getWidth() / 2));
-                    super.setY(original.y);
+                    super.setY(originalY);
                 }
                 else
                 {
                     super.resetVelocityY();
-                    super.setY(original.y);
+                    super.setY(originalY);
                 }
             }
         }

@@ -116,9 +116,14 @@ public final class Manager implements Disposable, IElement
             //create random enemy
             Enemy enemy = new Enemy(Enemy.getRandom(random));
             
+            //set the starting x,y coordinates
             enemy.setLocation(0, 1);
             enemy.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
             
+            //set the column, row based on the x,y coordinate
+            board.updateLocation(enemy);
+            
+            //add enemy to the list
             enemies.add(enemy);
         }
         

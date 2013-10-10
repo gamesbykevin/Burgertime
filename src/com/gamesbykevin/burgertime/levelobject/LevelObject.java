@@ -70,28 +70,24 @@ public class LevelObject extends Sprite implements IElement
      */
     protected void setupAnimations(final Type type) throws Exception
     {
-        final Animation animation;
+        final Animation animation = new Animation();
         
         switch(type)
         {
             case BurgerContainer:
-                animation = new Animation();
                 animation.add(new Rectangle(245, 335, 38, 9), 0);
                 break;
                 
             case Ladder:
-                animation = new Animation();
                 animation.add(new Rectangle(199, 309, 10, 19), 0);
                 break;
                 
             case Platform:
-                animation = new Animation();
                 animation.add(new Rectangle(96, 325, 24, 2), 0);
                 break;
                 
             case Salt:
-                animation = new Animation();
-                animation.add(new Rectangle(0, 40, 20, 20), DELAY);
+                animation.add(new Rectangle(00, 40, 20, 20), DELAY);
                 animation.add(new Rectangle(20, 40, 20, 20), DELAY);
                 animation.add(new Rectangle(40, 40, 20, 20), DELAY);
                 animation.add(new Rectangle(60, 40, 20, 20), DELAY);
