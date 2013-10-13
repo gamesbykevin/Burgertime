@@ -59,10 +59,20 @@ public class LevelObject extends Sprite implements IElement
     public void update(final Engine engine) throws Exception
     {
         //update location based on velocity
-        super.update();
+        this.update();
         
         //update animation
         super.getSpriteSheet().update(engine.getMain().getTime());
+    }
+    
+    /**
+     * Update the character's column, row position based on the velocity
+     */
+    @Override
+    public void update()
+    {
+        super.setCol(super.getCol() + super.getVelocityX());
+        super.setRow(super.getRow() + super.getVelocityY());
     }
     
     /**

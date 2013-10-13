@@ -61,13 +61,17 @@ public final class Manager implements Disposable, IElement
         
         System.out.println("Seed: " + seed);
         
+        //create new game board
+        this.board = new Board(engine, random);
+        
         //create our hero object
         this.hero = new Hero();
         this.hero.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
-        this.hero.setLocation(0, 1);
-        
-        //create new game board
-        this.board = new Board(engine, random);
+        this.hero.setCol(0.5);
+        this.hero.setRow(0.5);
+
+        //set the boundaries so we know what is considered in bounds
+        this.hero.setBounds(board);
         
         //create empty list for the enemies
         this.enemies = new ArrayList<>();
@@ -117,11 +121,11 @@ public final class Manager implements Disposable, IElement
             Enemy enemy = new Enemy(Enemy.getRandom(random));
             
             //set the starting x,y coordinates
-            enemy.setLocation(0, 1);
-            enemy.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+            enemy.setCol(0.5);
+            enemy.setRow(0.5);
             
-            //set the column, row based on the x,y coordinate
-            board.updateLocation(enemy);
+            //set the image
+            enemy.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
             
             //add enemy to the list
             enemies.add(enemy);

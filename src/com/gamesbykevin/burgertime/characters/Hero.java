@@ -6,6 +6,7 @@ import com.gamesbykevin.burgertime.board.Board;
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.food.Food;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
+import java.awt.Color;
 
 import java.awt.event.KeyEvent;
 import java.awt.Graphics;
@@ -23,21 +24,18 @@ public final class Hero extends Character implements ICharacter
     //the salt the hero can dump on the enemies
     private List<LevelObject> projectiles;
     
-    //the feet area of the player used for collision detection with the board
-    private Rectangle feet;
-    
     public Hero()
     {
         super(Type.Hero);
         
         this.projectiles = new ArrayList<>();
-        
-        setSpeed(Speed.MEDIUM);
     }
     
     @Override
     public void update(final Engine engine) throws Exception
     {
+        super.update(engine.getManager().getBoard(), engine.getMain().getTime());
+        
         //if we are able to move check for input
         if (canMove())
         {
@@ -48,12 +46,6 @@ public final class Hero extends Character implements ICharacter
             //if we can't move reset the velocity
             super.resetVelocity();
         }
-        
-        //check for collision
-        checkCollision(engine.getManager().getBoard());
-        
-        //update sprite location based on velocity
-        super.update();
         
         //if the projectile exists
         if (!projectiles.isEmpty())
@@ -76,94 +68,12 @@ public final class Hero extends Character implements ICharacter
         //manage the current animation
         checkAnimation();
         
-        //update sprite sheet
-        getSpriteSheet().update(engine.getMain().getTime());
-        
-        //set the heroes correct column, row
-        engine.getManager().getBoard().updateLocation(this);
-    }
-    
-    private void checkCollision(final Board board)
-    {
-        //if we are not moving don't bother checking for board collision
-        if (!hasVelocity())
-            return;
-        
-        //get original location
-        final double originalX = getX();
-        final double originalY = getY();
-        
-        //update location temporary
-        super.update();
-        
-        final int width  = (int)(getWidth() * .5);
-        final int height = (int)(getSpeed() *  5);
-        
-        if (feet == null)
-            feet = new Rectangle();
-        
-        //update the feet location
-        this.feet.x = (int)(getX() + (getWidth() / 2) - (width / 2));
-        this.feet.y = (int)(getY() + getHeight() - height);
-        this.feet.width  = width;
-        this.feet.height = (height * 2);
-        
-        final LevelObject ladder   = board.getCollision(Type.Ladder,   feet);
-        final LevelObject platform = board.getCollision(Type.Platform, feet);
-        
-        if (ladder == null && platform == null)
-        {
-            //reset the speed
-            super.resetVelocity();
-            
-            //reset location back
-            super.setX(originalX);
-            super.setY(originalY);
-        }
-        else
-        {
-            if (super.hasVelocityX())
-            {
-                if (platform != null)
-                {
-                    //correct y cooridnate while walking on platform
-                    super.setX(originalX);
-                    super.setY(platform.getY() + platform.getHeight() - super.getHeight());
-                }
-                else
-                {
-                    super.resetVelocityX();
-                    super.setX(originalX);
-                }
-            }
-            
-            if (super.hasVelocityY())
-            {
-                if (ladder != null)
-                {
-                    //also center position on ladder
-                    super.setX(ladder.getX() + (ladder.getWidth() / 2) - (super.getWidth() / 2));
-                    super.setY(originalY);
-                }
-                else
-                {
-                    super.resetVelocityY();
-                    super.setY(originalY);
-                }
-            }
-        }
-        
         //check all food for collision
-        for (Food food : board.getFoods())
+        for (Food food : engine.getManager().getBoard().getFoods())
         {
             //check every piece of food for collision
-            food.checkCollision(this);
+            //food.checkCollision(this);
         }
-    }
-    
-    public Rectangle getFeet()
-    {
-        return this.feet;
     }
     
     private void checkAnimation()
@@ -301,5 +211,8 @@ public final class Hero extends Character implements ICharacter
         {
             projectile.draw(graphics);
         }
+        
+        graphics.setColor(Color.WHITE);
+        graphics.drawString("(" + getCol() + "," + getRow() + ")", 150, 400);
     }
 }

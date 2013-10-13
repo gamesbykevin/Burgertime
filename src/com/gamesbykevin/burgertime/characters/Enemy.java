@@ -56,7 +56,7 @@ public final class Enemy extends Character implements ICharacter
     @Override
     public void update(final Engine engine) throws Exception
     {
-        super.update();
+        super.update(engine.getManager().getBoard(), engine.getMain().getTime());
         
         if (getVelocityX() > 0)
             getSpriteSheet().setCurrent(State.MoveEast);
@@ -70,36 +70,10 @@ public final class Enemy extends Character implements ICharacter
         if (getVelocityY() < 0)
             getSpriteSheet().setCurrent(State.MoveNorth);
         
-        //update sprite sheet
-        getSpriteSheet().update(engine.getMain().getTime());
-        
         //if there are no steps calculate them
         if (steps.isEmpty())
         {
-            if (super.getX() < engine.getManager().getHero().getX())
-            {
-                super.resetVelocity();
-                super.setVelocityX(super.getSpeed());
-            }
             
-            if (super.getX() > engine.getManager().getHero().getX())
-            {
-                super.resetVelocity();
-                super.setVelocityX(-super.getSpeed());
-            }
-            
-            if (super.getY() < engine.getManager().getHero().getY())
-            {
-                super.resetVelocity();
-                super.setVelocityY(super.getSpeed());
-                
-            }
-            
-            if (super.getY() > engine.getManager().getHero().getY())
-            {
-                super.resetVelocity();
-                super.setVelocityY(-super.getSpeed());
-            }
         }
         else
         {

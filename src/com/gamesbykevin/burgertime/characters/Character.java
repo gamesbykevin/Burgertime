@@ -2,6 +2,7 @@ package com.gamesbykevin.burgertime.characters;
 
 import com.gamesbykevin.framework.base.Animation;
 
+import com.gamesbykevin.burgertime.board.Board;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
 import com.gamesbykevin.burgertime.levelobject.LevelObject.Type;
 import com.gamesbykevin.framework.util.TimerCollection;
@@ -41,7 +42,7 @@ public class Character extends LevelObject
      */
     public enum Speed
     {
-        SLOW(.5), MEDIUM(1.25), FAST(2);
+        SLOW(.05), MEDIUM(.08), FAST(.11);
         
         private Speed(final double velocity)
         {
@@ -56,8 +57,8 @@ public class Character extends LevelObject
         }
     }
     
-    //the characters speed
-    private Speed speed;
+    //the characters speed, default is slow
+    private Speed speed = Speed.SLOW;
     
     public Character(final Type type)
     {
@@ -65,9 +66,6 @@ public class Character extends LevelObject
         
         //set default width/height
         super.setDimensions(DIMENSION, DIMENSION);
-        
-        //set the speed
-        setSpeed(Speed.SLOW);
     }
     
     protected void setSpeed(final Speed speed)
@@ -118,6 +116,146 @@ public class Character extends LevelObject
                 
             default:
                 return false;
+        }
+    }
+    
+    protected void update(final Board board, final long time) throws Exception
+    {
+        //update sprite sheet
+        getSpriteSheet().update(time);
+        
+        //if we are moving
+        if (hasVelocity())
+        {
+            //check for collision
+            checkCollision(board);
+        }
+        
+        //now set x,y based on the column, row
+        super.setX((super.getCol() * Board.WIDTH) - (getWidth()  / 2));
+        super.setY((super.getRow() * Board.HEIGHT)- (getHeight() / 2));
+        
+        //update location
+        super.update();
+    }
+    
+    private void checkCollision(final Board board)
+    {
+        //get original location
+        final double col = getCol();
+        final double row = getRow();
+        
+        //update location temporary
+        super.update();
+        
+        if (!super.hasBounds())
+        {
+            //stop movement if no longer in bounds
+            super.resetVelocity();
+            
+            //reset location
+            super.setCol(col);
+            super.setRow(row);
+            
+            //exit method
+            return;
+        }
+        
+        //get the platform at the current location
+        LevelObject platform = board.getObject(Type.Platform, super.getCol(), super.getRow());
+        
+        //if we are moving left or right
+        if (super.hasVelocityX())
+        {
+            //if a platform exists
+            if (platform != null)
+            {
+                //reset x coordinate
+                super.setCol(col);
+                
+                //if we are moving horizontally on a platform correct y coordinate
+                super.setRow(platform.getRow() + 1 - .4);
+            }
+            else
+            {
+                //reset location
+                super.setCol(col);
+                super.setRow(row);
+
+                //reset the velocity
+                super.resetVelocityX();
+            }
+        }
+        
+        //get the ladder at the current location
+        LevelObject ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow());
+        
+        //if we are moving up or down
+        if (super.hasVelocityY())
+        {
+            //if a ladder exists
+            if (ladder != null)
+            {
+                //if we are moving vertically on a ladder center x coordinate
+                super.setCol(ladder.getCol() + .5);
+
+                //reset y coordinate
+                super.setRow(row);
+            }
+            else
+            {
+                //are we moving south
+                if (super.getVelocityY() > 0)
+                {
+                    //check if the ladder is below
+                    ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow() + .5);
+
+                    //ladder exists
+                    if (ladder != null)
+                    {
+                        //if we are moving vertically on a ladder center x coordinate
+                        super.setCol(ladder.getCol() + .5);
+
+                        //reset y coordinate
+                        super.setRow(row);
+                    }
+                    else
+                    {
+                        //ladder does not exist, reset location
+                        super.setRow(row);
+                        super.setCol(col);
+
+                        //reset y velocity
+                        super.resetVelocityY();
+                    }
+                }
+                
+                //if heading north
+                if (super.getVelocityY() < 0)
+                {
+                    //check if ladder is above
+                    ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow() - .5);
+                    
+                    //ladder exists
+                    if (ladder != null)
+                    {
+                        //if we are moving vertically on a ladder center x coordinate
+                        super.setCol(ladder.getCol() + .5);
+
+                        //reset y coordinate
+                        super.setRow(row);
+                    }
+                    else
+                    {
+                        //ladder does not exist, reset location
+                        super.setRow(row);
+                        super.setCol(col);
+
+                        //reset y velocity
+                        super.resetVelocityY();
+                    }
+                }
+            }
         }
     }
     

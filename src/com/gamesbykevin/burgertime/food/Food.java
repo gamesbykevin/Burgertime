@@ -160,8 +160,8 @@ public class Food extends LevelObject
             tmp.height = parts.get(index).height;
             
             //if the pieces intersect set flag to true
-            if (hero.getFeet().intersects(tmp))
-                intersects.set(index, true);
+            //if (hero.getFeet().intersects(tmp))
+            //    intersects.set(index, true);
         }
 
     }

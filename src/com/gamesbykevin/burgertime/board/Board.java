@@ -40,8 +40,8 @@ public class Board extends Sprite implements Disposable, IElement
     private Image image;
     
     //dimensions of the board
-    private static final int COLUMNS = 17;
-    private static final int ROWS = 14;
+    public static final int COLUMNS = 17;
+    public static final int ROWS = 14;
     
     //rows where the characters can move amungst
     private static final int VALID_ROWS = 10;
@@ -53,15 +53,15 @@ public class Board extends Sprite implements Disposable, IElement
     final List<Integer> validRows;
     
     //dimensions of each cell on the board
-    private static final int WIDTH = 24;
-    private static final int HEIGHT = 20;
+    public static final int WIDTH = 24;
+    public static final int HEIGHT = 20;
     
     public Board(final Engine engine, final Random random)
     {
         super();
         
         //set the boundaries
-        super.setBounds(0, COLUMNS - 1, 0, ROWS - 1);
+        super.setBounds(0, COLUMNS, 0, ROWS);
         
         //create empty list of level objects
         this.objects = new ArrayList<>();
@@ -184,17 +184,6 @@ public class Board extends Sprite implements Disposable, IElement
         }
     }
     
-    public LevelObject getCollision(final Type type, final Rectangle area)
-    {
-        for (LevelObject object : objects)
-        {
-            if (object.getType() == type && object.getRectangle().intersects(area))
-                return object;
-        }
-        
-        return null;
-    }
-    
     @Override
     public void dispose()
     {
@@ -204,6 +193,7 @@ public class Board extends Sprite implements Disposable, IElement
     @Override
     public void update(final Engine engine) throws Exception
     {
+        /*
         for (int index = 0; index < foods.size(); index++)
         {
             //get the current piece of food
@@ -294,6 +284,28 @@ public class Board extends Sprite implements Disposable, IElement
                 continue;
             }
         }
+        */
+    }
+    
+    /**
+     * Get the LevelObject of the specified type at the specified location
+     * @param type The type of object we are looking for
+     * @param column - Self explanatory
+     * @param row - Self explanatory
+     * @return LevelObject if the specified Type was not found at the specified location null is returned
+     */
+    public LevelObject getObject(final Type type, final double column, final double row)
+    {
+        for (LevelObject object : objects)
+        {
+            if (object.getType() != type)
+                continue;
+            
+            if ((int)object.getCol() == (int)column && (int)object.getRow() == (int)row)
+                return object;
+        }
+        
+        return null;
     }
     
     public boolean hasCompleted()
@@ -305,19 +317,6 @@ public class Board extends Sprite implements Disposable, IElement
                 return false;
         }
         return true;
-    }
-    
-    /**
-     * Update the level object column, row based on their x,y coordinate
-     * @param object 
-     */
-    public void updateLocation(final LevelObject object)
-    {
-        final int col = (int)(object.getX() / WIDTH);
-        final int row = (int)(object.getY() / HEIGHT);
-        
-        object.setCol(col);
-        object.setRow(row);
     }
     
     private void checkDrop(final Food tmp)
