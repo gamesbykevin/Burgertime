@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class Food extends LevelObject
 {
-    //list of cooridnates on image
+    //each part of the food
     private List<Rectangle> parts;
     
     //flag to check if the player hit each part
@@ -25,9 +25,6 @@ public class Food extends LevelObject
     
     //each piece of food will be separate into 4 parts
     private static final int PARTS = 4;
-    
-    //middle area of food, since food is wide enough to cover many paltforms
-    private Rectangle middle;
     
     //each food object is unique
     private long id = System.nanoTime();
@@ -38,19 +35,18 @@ public class Food extends LevelObject
         
         final int width = (int)(super.getWidth() / PARTS);
         
-        //create new list consisting of parts of the entire image
-        this.parts = new ArrayList<>();
-        
         //create new list that will determine if the hero hit each part
         this.intersects = new ArrayList<>();
         
-        //continue to add parts until we reached our expected limit
-        while(parts.size() < PARTS)
+        //create empty list
+        this.parts = new ArrayList<>();
+        
+        //continue to add until we reached our limit
+        while(intersects.size() < PARTS)
         {
-            //add the part to the list
-            parts.add(new Rectangle(parts.size() * width, 0, width, (int)getHeight()));
+            parts.add(new Rectangle(intersects.size() * width, 0, width, (int)getHeight()));
             
-            //by default we do not intersect the part
+            //by default nothing intersects
             intersects.add(false);
         }
     }
@@ -102,21 +98,6 @@ public class Food extends LevelObject
         }
     }
     
-    public Rectangle getMiddle()
-    {
-        if (this.middle == null)
-            middle = new Rectangle();
-        
-        final int width = (int)(getWidth() * .25);
-
-        this.middle.x = (int)(getX() + (getWidth() / 2) - (width / 2));
-        this.middle.y = (int)(getY());
-        this.middle.width = width;
-        this.middle.height = (int)getHeight();
-        
-        return this.middle;
-    }
-    
     /**
      * Checks if all parts of this food has intersected with the hero.
      * @return true if all parts have been intersected, false otherwise
@@ -146,24 +127,23 @@ public class Food extends LevelObject
     
     public void checkCollision(final Hero hero)
     {
-        Rectangle tmp = new Rectangle();
+        if ((int)super.getRow() != (int)hero.getRow())
+            return;
         
-        for (int index = 0; index < parts.size(); index++)
+        final double startCol = super.getCol();
+        final double eachLength = (1.0 / intersects.size());
+        
+        for (int index = 0; index < intersects.size(); index++)
         {
             //don't check for collision if we have already detected a collision
             if (intersects.get(index))
                 continue;
             
-            tmp.x = (int)(getX() + parts.get(index).x);
-            tmp.y = (int)(getY() + parts.get(index).y);
-            tmp.width = parts.get(index).width;
-            tmp.height = parts.get(index).height;
+            final double start = startCol + (index * eachLength);
+            final double end = start + eachLength;
             
-            //if the pieces intersect set flag to true
-            //if (hero.getFeet().intersects(tmp))
-            //    intersects.set(index, true);
+            intersects.set(index, hero.getCol() >= start && hero.getCol() <= end);
         }
-
     }
     
     @Override

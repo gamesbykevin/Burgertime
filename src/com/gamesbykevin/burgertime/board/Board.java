@@ -155,11 +155,14 @@ public class Board extends Sprite implements Disposable, IElement
         }
         
         //then randomly remove unused platforms and some of the ladders
-    }
-    
-    public List<Food> getFoods()
-    {
-        return this.foods;
+        final int limit = objects.size() - 15;
+        
+        while(objects.size() > limit)
+        {
+            final int index = random.nextInt(objects.size());
+            
+            objects.remove(index);
+        }
     }
     
     private void resetValidRows(final Random random)
@@ -193,7 +196,6 @@ public class Board extends Sprite implements Disposable, IElement
     @Override
     public void update(final Engine engine) throws Exception
     {
-        /*
         for (int index = 0; index < foods.size(); index++)
         {
             //get the current piece of food
@@ -208,38 +210,46 @@ public class Board extends Sprite implements Disposable, IElement
                     //set drop speed
                     food.setVelocityY(Speed.MEDIUM.getVelocity());
                 }
+                else
+                {
+                    //make sure the hero is moving before we check collision
+                    if (engine.getManager().getHero().hasVelocity())
+                    {
+                        //if no velocity and no drop check for hero collision
+                        food.checkCollision(engine.getManager().getHero());
+                    }
+                }
                 
                 //skip to next object
                 continue;
             }
             
-            //update location based on current velocity set
+            //update column, row based on current velocity set
             food.update();
 
+            //now we need to update y based on the row
+            food.setY(food.getRow() * HEIGHT);
+            
             //check if hit platform
-            final LevelObject platform = this.getCollision(Type.Platform, food.getMiddle());
-
+            final LevelObject platform = this.getObject(Type.Platform, food);
+            
             //if platform exists then we hit one 
-            if (platform != null)
+            if (platform != null && platform.getRow() > food.getRow())
             {
-                //we also want to make sure the platform is below the current food row and the columns are the same
-                if (food.getCol() == platform.getCol() && platform.getRow() > food.getRow())
-                {
-                    //set the new row for food
-                    food.setRow(platform.getRow());
+                //set the new row for food
+                food.setRow(platform.getRow());
 
-                    //no longer drop so stop velocity
-                    food.resetVelocity();
+                //no longer drop so stop velocity
+                food.resetVelocity();
 
-                    //reset food parts
-                    food.resetDrop();
+                //reset food parts
+                food.resetDrop();
 
-                    //check if any other pieces of food need to be dropped
-                    checkDrop(food);
-                    
-                    //skip to the next object
-                    continue;
-                }
+                //check if any other pieces of food need to be dropped
+                checkDrop(food);
+
+                //skip to the next object
+                continue;
             }
             
             //now check if hit another piece of food in the burger container
@@ -249,7 +259,7 @@ public class Board extends Sprite implements Disposable, IElement
                 if (food.getId() == tmp.getId() || food.getCol() != tmp.getCol() || tmp.getRow() <= VALID_ROWS)
                     continue;
                 
-                if (tmp.getRectangle().intersects(food.getRectangle()))
+                if (tmp.getCol() == food.getCol() && tmp.getRow() == food.getRow())
                 {
                     //set the new row
                     food.setRow(tmp.getRow());
@@ -266,7 +276,7 @@ public class Board extends Sprite implements Disposable, IElement
             }
             
             //check if hit burger container
-            LevelObject container = this.getCollision(Type.BurgerContainer, food.getRectangle());
+            LevelObject container = this.getObject(Type.BurgerContainer, food);
 
             //if container exists then we hit it
             if (container != null)
@@ -284,11 +294,16 @@ public class Board extends Sprite implements Disposable, IElement
                 continue;
             }
         }
-        */
+    }
+    
+    public LevelObject getObject(final Type type, final LevelObject object)
+    {
+        return getObject(type, object.getCol(), object.getRow());
     }
     
     /**
-     * Get the LevelObject of the specified type at the specified location
+     * Get the LevelObject of the specified type at the specified location.
+     * If the column, row is out of bounds null will be returned.
      * @param type The type of object we are looking for
      * @param column - Self explanatory
      * @param row - Self explanatory
@@ -296,6 +311,14 @@ public class Board extends Sprite implements Disposable, IElement
      */
     public LevelObject getObject(final Type type, final double column, final double row)
     {
+        //set the location we are checking as the current
+        super.setCol(column);
+        super.setRow(row);
+        
+        //if the location is out of bounds return null
+        if (!super.hasBounds())
+            return null;
+        
         for (LevelObject object : objects)
         {
             if (object.getType() != type)

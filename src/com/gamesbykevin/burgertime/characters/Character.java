@@ -151,112 +151,129 @@ public class Character extends LevelObject
         if (!super.hasBounds())
         {
             //stop movement if no longer in bounds
-            super.resetVelocity();
-            
-            //reset location
-            super.setCol(col);
-            super.setRow(row);
+            resetAll(col, row);
             
             //exit method
             return;
         }
         
-        //get the platform at the current location
-        LevelObject platform = board.getObject(Type.Platform, super.getCol(), super.getRow());
-        
         //if we are moving left or right
         if (super.hasVelocityX())
         {
+            //get current location by default
+            LevelObject platform = board.getObject(Type.Platform, super.getCol(), super.getRow());
+            
+            if (super.getVelocityX() < 0)
+            {
+                if (super.getCol() <= ((int)super.getCol()) + .5)
+                {
+                    //make sure we are on a platform before we check the platform to the west
+                    if (platform != null)
+                    {
+                        //are we moving west, if so get the platform to the west
+                        platform = board.getObject(Type.Platform, super.getCol() - .5, super.getRow());
+                    }
+                }
+            }
+            else
+            {
+                if (super.getCol() > ((int)super.getCol()) + .5)
+                {
+                    //make sure we are on a platform before we check the platform to the east
+                    if (platform != null)
+                    {
+                        //are we moving east, if so get the platform to the east
+                        platform = board.getObject(Type.Platform, super.getCol() + .5, super.getRow());
+                    }
+                }
+            }
+            
             //if a platform exists
             if (platform != null)
             {
                 //reset x coordinate
                 super.setCol(col);
-                
+
                 //if we are moving horizontally on a platform correct y coordinate
                 super.setRow(platform.getRow() + 1 - .4);
             }
             else
             {
-                //reset location
-                super.setCol(col);
-                super.setRow(row);
-
-                //reset the velocity
-                super.resetVelocityX();
+                //reset
+                resetAll(col, row);
             }
+            
+            return;
         }
-        
-        //get the ladder at the current location
-        LevelObject ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow());
         
         //if we are moving up or down
         if (super.hasVelocityY())
         {
-            //if a ladder exists
-            if (ladder != null)
+            //get current location by default
+            LevelObject ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow());
+            
+            if (getVelocityY() < 0)
             {
-                //if we are moving vertically on a ladder center x coordinate
-                super.setCol(ladder.getCol() + .5);
-
-                //reset y coordinate
-                super.setRow(row);
+                if (super.getRow() <= ((int)super.getRow()) + .5)
+                {
+                    //make sure ladder exists at current location
+                    if (ladder != null)
+                    {
+                        //if we are heading north
+                        ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow() - .5);
+                        
+                        //we currently have a ladder but no ladder is above us
+                        if (ladder == null)
+                        {
+                            //check the ladder below
+                            ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow() + .5);
+                        }
+                    }
+                }
+                else
+                {
+                    //if the ladder does not exist at the curent position check if a ladder is below
+                    if (ladder == null)
+                    {
+                        ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow() + .5);
+                    }
+                }
             }
             else
             {
-                //are we moving south
-                if (super.getVelocityY() > 0)
+                if (super.getRow() > ((int)super.getRow()) + .5)
                 {
-                    //check if the ladder is below
+                    //if we are heading south
                     ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow() + .5);
-
-                    //ladder exists
-                    if (ladder != null)
-                    {
-                        //if we are moving vertically on a ladder center x coordinate
-                        super.setCol(ladder.getCol() + .5);
-
-                        //reset y coordinate
-                        super.setRow(row);
-                    }
-                    else
-                    {
-                        //ladder does not exist, reset location
-                        super.setRow(row);
-                        super.setCol(col);
-
-                        //reset y velocity
-                        super.resetVelocityY();
-                    }
-                }
-                
-                //if heading north
-                if (super.getVelocityY() < 0)
-                {
-                    //check if ladder is above
-                    ladder = board.getObject(Type.Ladder, super.getCol(), super.getRow() - .5);
-                    
-                    //ladder exists
-                    if (ladder != null)
-                    {
-                        //if we are moving vertically on a ladder center x coordinate
-                        super.setCol(ladder.getCol() + .5);
-
-                        //reset y coordinate
-                        super.setRow(row);
-                    }
-                    else
-                    {
-                        //ladder does not exist, reset location
-                        super.setRow(row);
-                        super.setCol(col);
-
-                        //reset y velocity
-                        super.resetVelocityY();
-                    }
                 }
             }
+                
+            if (ladder != null)
+            {
+                //if we are moving vertically on a ladder center x coordinate
+                setCol(ladder.getCol() + .5);
+
+                //reset y coordinate
+                setRow(row);
+            }
+            else
+            {
+                //reset
+                resetAll(col, row);
+            }
+            
+            return;
         }
+    }
+    
+    private void resetAll(final double col, final double row)
+    {
+        //reset location
+        super.setCol(col);
+        super.setRow(row);
+        
+        //stop velocity
+        super.resetVelocity();
     }
     
     @Override

@@ -67,13 +67,6 @@ public final class Hero extends Character implements ICharacter
         
         //manage the current animation
         checkAnimation();
-        
-        //check all food for collision
-        for (Food food : engine.getManager().getBoard().getFoods())
-        {
-            //check every piece of food for collision
-            //food.checkCollision(this);
-        }
     }
     
     private void checkAnimation()
