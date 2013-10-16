@@ -34,17 +34,27 @@ public final class Hero extends Character implements ICharacter
     @Override
     public void update(final Engine engine) throws Exception
     {
-        super.update(engine.getManager().getBoard(), engine.getMain().getTime());
+        super.update(engine.getMain().getTime());
         
-        //if we are able to move check for input
+        //if we are able to move
         if (canMove())
         {
+            //manage the keyboard input
             manageInput(engine.getKeyboard());
         }
         else
         {
             //if we can't move reset the velocity
-            super.resetVelocity();
+            resetVelocity();
+            
+            //we can't continue any more
+            return;
+        }
+        
+        //if moving, check for collision with the board
+        if (hasVelocity())
+        {
+            checkCollision(engine.getManager().getBoard());
         }
         
         //if the projectile exists
@@ -53,17 +63,28 @@ public final class Hero extends Character implements ICharacter
             //update all projectiles
             for (int i=0; i < projectiles.size(); i++)
             {
+                //get the current projectile
+                LevelObject projectile = projectiles.get(i);
+                
                 //update the location and animation
-                projectiles.get(i).update(engine);
+                projectile.update(engine);
 
                 //if the animation has finished we will remove
-                if (projectiles.get(i).getSpriteSheet().hasFinished())
+                if (projectile.getSpriteSheet().hasFinished())
                 {
                     projectiles.remove(i);
                     i--;
                 }
+                else
+                {
+                    //check if the projectile has hit any of the enemies
+                    engine.getManager().getEnemies().checkProjectileCollision(projectile);
+                }
             }
         }
+        
+        //check if any enemies have hit the hero
+        engine.getManager().getEnemies().checkHeroCollision(this);
         
         //manage the current animation
         checkAnimation();
@@ -149,22 +170,22 @@ public final class Hero extends Character implements ICharacter
             {
                 case MoveSouth:
                     super.setState(State.AttackSouth);
-                    addProjectile(getX(), getY() + DIMENSION);
+                    addProjectile(getX(), getY() + DIMENSION, super.getCol(), super.getRow() + .5);
                     break;
                     
                 case MoveEast:
                     super.setState(State.AttackEast);
-                    addProjectile(getX() + DIMENSION, getY());
+                    addProjectile(getX() + DIMENSION, getY(), super.getCol() + .5, super.getRow());
                     break;
                     
                 case MoveWest:
                     super.setState(State.AttackWest);
-                    addProjectile(getX() - DIMENSION, getY());
+                    addProjectile(getX() - DIMENSION, getY(), super.getCol() - .5, super.getRow());
                     break;
                     
                 case MoveNorth:
                     super.setState(State.AttackNorth);
-                    addProjectile(getX(), getY() - DIMENSION);
+                    addProjectile(getX(), getY() - DIMENSION, super.getCol(), super.getRow() - .5);
                     break;
             }
         }
@@ -173,9 +194,9 @@ public final class Hero extends Character implements ICharacter
     /**
      * Add a projectile at the specified x,y coordinates
      * @param x
-     * @param y 
+     * @param y
      */
-    private void addProjectile(final double x, final double y)
+    private void addProjectile(final double x, final double y, final double col, final double row)
     {
         //make sure we aren't pausing the animation
         super.getSpriteSheet().setPause(false);
@@ -185,6 +206,10 @@ public final class Hero extends Character implements ICharacter
         //set the location
         projectile.setLocation(x, y);
                 
+        //set the column and row
+        projectile.setCol(col);
+        projectile.setRow(row);
+        
         //set projectile dimensions
         projectile.setDimensions(DIMENSION, DIMENSION);
         

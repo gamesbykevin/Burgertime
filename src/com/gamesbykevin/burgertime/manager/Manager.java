@@ -18,8 +18,7 @@ import java.util.Random;
 
 import com.gamesbykevin.burgertime.resources.*;
 
-import com.gamesbykevin.burgertime.characters.Enemy;
-import com.gamesbykevin.burgertime.characters.Hero;
+import com.gamesbykevin.burgertime.characters.*;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
 
 /**
@@ -40,11 +39,8 @@ public final class Manager implements Disposable, IElement
     //our game board object
     private Board board;
     
-    //list of enemies
-    private List<Enemy> enemies;
-    
-    //enemy limit
-    private final int limit = 3;
+    //object that manages all the enemies
+    private Enemies enemies;
     
     /**
      * Constructor for Manager, this is the point where we load any menu option configurations
@@ -67,14 +63,19 @@ public final class Manager implements Disposable, IElement
         //create our hero object
         this.hero = new Hero();
         this.hero.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
-        this.hero.setCol(0.5);
-        this.hero.setRow(0.5);
+        this.hero.setCol(8.5);
+        this.hero.setRow(10.5);
 
         //set the boundaries so we know what is considered in bounds
         this.hero.setBounds(board);
         
-        //create empty list for the enemies
-        this.enemies = new ArrayList<>();
+        //create new object to manage our enemies
+        this.enemies = new Enemies();
+    }
+    
+    public Enemies getEnemies()
+    {
+        return this.enemies;
     }
     
     public Board getBoard()
@@ -110,31 +111,14 @@ public final class Manager implements Disposable, IElement
     @Override
     public void update(final Engine engine) throws Exception
     {
+        //update the hero
         this.hero.update(engine);
         
+        //update the board and its elements
         this.board.update(engine);
         
-        //if the number of enemies is less than our limit
-        while (enemies.size() < limit)
-        {
-            //create random enemy
-            Enemy enemy = new Enemy(Enemy.getRandom(random));
-            
-            //set the starting x,y coordinates
-            enemy.setCol(0.5);
-            enemy.setRow(0.5);
-            
-            //set the image
-            enemy.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
-            
-            //add enemy to the list
-            enemies.add(enemy);
-        }
-        
-        for (Enemy enemy : enemies)
-        {
-            enemy.update(engine);
-        }
+        //update the enemies
+        this.enemies.update(engine);
     }
     
     /**
@@ -144,13 +128,13 @@ public final class Manager implements Disposable, IElement
     @Override
     public void render(final Graphics graphics)
     {
+        //draw the board first
         this.board.render(graphics);
         
+        //then draw the hero
         this.hero.render(graphics);
-        
-        for (Enemy enemy : enemies)
-        {
-            enemy.render(graphics);
-        }
+
+        //finally draw the enemies
+        this.enemies.render(graphics);
     }
 }

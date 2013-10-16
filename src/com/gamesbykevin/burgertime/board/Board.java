@@ -1,25 +1,22 @@
 package com.gamesbykevin.burgertime.board;
 
-import com.gamesbykevin.framework.base.Cell;
 import com.gamesbykevin.framework.base.Sprite;
+import com.gamesbykevin.framework.labyrinth.Location;
+import com.gamesbykevin.framework.labyrinth.Location.Wall;
 import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.burgertime.characters.Character.Speed;
-import com.gamesbykevin.burgertime.characters.Hero;
+import com.gamesbykevin.burgertime.characters.Character.State;
+import com.gamesbykevin.burgertime.characters.Enemy;
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.food.Food;
-import com.gamesbykevin.burgertime.resources.GameAudio;
 import com.gamesbykevin.burgertime.resources.GameImage;
 import com.gamesbykevin.burgertime.shared.IElement;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
 import com.gamesbykevin.burgertime.levelobject.LevelObject.Type;
-import com.gamesbykevin.burgertime.manager.Manager;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -28,166 +25,53 @@ import java.util.Random;
  * The board contains the balls
  * @author GOD
  */
-public class Board extends Sprite implements Disposable, IElement
+public final class Board extends Generator implements Disposable, IElement
 {
-    //all of the objects on the board
-    private List <LevelObject> objects;
-    
-    //list of foods on the board
-    private List<Food> foods;
-    
     //image containing all board images
     private Image image;
     
-    //dimensions of the board
-    public static final int COLUMNS = 17;
-    public static final int ROWS = 15;
-    
-    //rows where the characters can move amungst
-    private static final int VALID_ROWS = 10;
-    
-    //the number of rows to reserve for food
-    private static final int FOOD_COUNT = Food.getTypeFood().size();
-    
-    //list of valid rows used to generate random level
-    final List<Integer> validRows;
-    
-    //dimensions of each cell on the board
-    public static final int WIDTH = 24;
-    public static final int HEIGHT = 20;
-    
     public Board(final Engine engine, final Random random)
     {
-        super();
-        
-        //set the boundaries
-        super.setBounds(0, COLUMNS, 0, ROWS);
-        
-        //create empty list of level objects
-        this.objects = new ArrayList<>();
-        
-        //create empty list of valid rows
-        this.validRows = new ArrayList<>();
-        
-        //create empty list of food
-        this.foods = new ArrayList<>();
+        super(engine, random);
         
         //store sprite sheet
         this.image = engine.getResources().getGameImage(GameImage.Keys.SpriteSheet);
-        
-        //create a full empty board
-        for (int row = 0; row < ROWS; row++)
-        {
-            for (int col = 0; col < COLUMNS; col++)
-            {
-                LevelObject obj;
-                
-                //bottom area, there will be empty space and the container
-                if (row > VALID_ROWS)
-                {
-                    //make sure we are on the bottom
-                    if (row == ROWS - 1)
-                    {
-                        if (col > 0 && col % 4 == 0)
-                        {
-                            obj = new LevelObject(Type.BurgerContainer);
-                            obj.setLocation(((col - 2) * WIDTH) + (WIDTH / 2) - (obj.getWidth() / 2), (row * HEIGHT) + HEIGHT);
-                            obj.setCol(col - 2);
-                            obj.setRow(row);
-                            objects.add(obj);
-                        }
-                    }
-                }
-                else
-                {
-                    //ladders don't get placed on the first row
-                    if (row > 0)
-                    {
-                        //the ladder will be placed on every even column
-                        if (col % 2 == 0)
-                        {
-                            obj = new LevelObject(Type.Ladder);
-                            obj.setLocation((col * WIDTH) + (WIDTH / 2) - (obj.getWidth() / 2), (row * HEIGHT));
-                            obj.setCol(col);
-                            obj.setRow(row);
-                            objects.add(obj);
-                        }
-                    }
-                    
-                    //add a plaform everywhere
-                    obj = new LevelObject(Type.Platform);
-                    obj.setLocation(col * WIDTH, (row * HEIGHT) + HEIGHT);
-                    obj.setCol(col);
-                    obj.setRow(row);
-                    objects.add(obj);
-                }
-            }
-        }
-        
-        //temporary food object
-        Food food;
-        
-        //get all food types that will be placed on the board
-        final List<Type> foodTypes = Food.getTypeFood();
-        
-        //now randomly place the food pieces
-        for (int col = 0; col < COLUMNS; col++)
-        {
-            //we place food every 4 columns
-            if (col > 0 && col % 4 == 0)
-            {
-                //create random list of rows to place all food
-                resetValidRows(random);
-                
-                //now add food for every existing row left
-                for (int index=0; index < validRows.size(); index++)
-                {
-                    final int row = validRows.get(index);
-                    
-                    //add food
-                    food = new Food(foodTypes.get(index));
-                    food.setLocation(((col - 2) * WIDTH) + (WIDTH / 2) - (food.getWidth() / 2), (row * HEIGHT) + HEIGHT - food.getHeight());
-                    food.setCol(col - 2);
-                    food.setRow(row);
-                    foods.add(food);
-                }
-            }
-        }
-        
-        /*
-        //then randomly remove unused platforms and some of the ladders
-        final int limit = objects.size() - 30;
-        
-        while(objects.size() > limit)
-        {
-            final int index = random.nextInt(objects.size());
-            
-            objects.remove(index);
-        }
-        */
     }
     
-    private void resetValidRows(final Random random)
+    /**
+     * This method will pick a random spawn point on either the west or east side
+     */
+    public void setRandomSpawn(final Random random)
     {
-        //clear list
-        validRows.clear();
+        final List<Double> rows = new ArrayList<>();
         
-        //populate the list with valid rows
-        for (int i=0; i <= VALID_ROWS; i++)
+        final double column;
+        
+        //get a random true/false result
+        if (random.nextBoolean())
         {
-            validRows.add(i);
+            //here we will do west
+            column = 0.5;
+        }
+        else
+        {
+            //here we will do east
+            column = COLUMNS - 0.5;
         }
         
-        //remove random rows until we reach the amount needed to reserve
-        while(validRows.size() > FOOD_COUNT)
+        for (double row=0; row < ROWS; row++)
         {
-            //get random index
-            final int index = random.nextInt(validRows.size());
-
-            //remove random row
-            validRows.remove(index);
+            //if platform exists add this as a possibility
+            if (getObject(Type.Platform, (int)column, row) != null)
+                rows.add(row);
         }
+        
+        super.setCol(column);
+        
+        final int index = random.nextInt(rows.size());
+        super.setRow(rows.get(index) + 0.5);
     }
+    
     
     @Override
     public void dispose()
@@ -198,7 +82,7 @@ public class Board extends Sprite implements Disposable, IElement
     @Override
     public void update(final Engine engine) throws Exception
     {
-        for (Food food : foods)
+        for (Food food : getFoods())
         {
             //if the food isn't falling check if gravity needs to be applied
             if (!food.hasVelocity())
@@ -207,7 +91,7 @@ public class Board extends Sprite implements Disposable, IElement
                 if (food.hasDrop())
                 {
                     //set drop speed
-                    food.setVelocityY(Speed.MEDIUM.getVelocity());
+                    food.setVelocityY(Speed.FASTER.getVelocity());
                     
                     //set the start row when dropping starts
                     food.setRowStart(food.getRow() + 1);
@@ -228,6 +112,9 @@ public class Board extends Sprite implements Disposable, IElement
             
             //update column, row based on current velocity set
             food.update();
+            
+            //check if the moving food collides with any of the enemies
+            engine.getManager().getEnemies().checkFoodCollision(food);
             
             //now we need to update y based on the row
             food.setY(food.getRow() * (double)HEIGHT);
@@ -270,7 +157,7 @@ public class Board extends Sprite implements Disposable, IElement
             return;
         
         //now check if hit another piece of food in the burger container
-        for (Food tmp : foods)
+        for (Food tmp : super.getFoods())
         {
             //don't check the same food piece, and don't check if the food is not at the bottom
             if (food.getId() == tmp.getId() || tmp.getRow() <= VALID_ROWS)
@@ -327,44 +214,9 @@ public class Board extends Sprite implements Disposable, IElement
         food.resetDrop();
     }
     
-    public LevelObject getObject(final Type type, final LevelObject object)
-    {
-        return getObject(type, object.getCol(), object.getRow());
-    }
-    
-    /**
-     * Get the LevelObject of the specified type at the specified location.
-     * If the column, row is out of bounds null will be returned.
-     * @param type The type of object we are looking for
-     * @param column - Self explanatory
-     * @param row - Self explanatory
-     * @return LevelObject if the specified Type was not found at the specified location null is returned
-     */
-    public LevelObject getObject(final Type type, final double column, final double row)
-    {
-        //set the location we are checking as the current
-        super.setCol(column);
-        super.setRow(row);
-        
-        //if the location is out of bounds return null
-        if (!super.hasBounds())
-            return null;
-        
-        for (LevelObject object : objects)
-        {
-            if (object.getType() != type)
-                continue;
-            
-            if ((int)object.getCol() == (int)column && (int)object.getRow() == (int)row)
-                return object;
-        }
-        
-        return null;
-    }
-    
     public boolean hasCompleted()
     {
-        for (Food food : foods)
+        for (Food food : getFoods())
         {
             //if the food row is not at the bottom yet
             if (food.getRow() <= VALID_ROWS)
@@ -375,7 +227,7 @@ public class Board extends Sprite implements Disposable, IElement
     
     private void checkDrop(final Food tmp)
     {
-        for (Food food : foods)
+        for (Food food : getFoods())
         {
             //make sure we aren't comparing the same object
             if (food.getId() == tmp.getId())
@@ -398,21 +250,21 @@ public class Board extends Sprite implements Disposable, IElement
     public void render(final Graphics graphics)
     {
         //draw ladders first
-        for (LevelObject object : objects)
+        for (LevelObject object : getObjects())
         {
             if (object.getType() == Type.Ladder)
                 object.draw(graphics, image);
         }
         
         //then draw platforms
-        for (LevelObject object : objects)
+        for (LevelObject object : getObjects())
         {
             if (object.getType() == Type.Platform)
                 object.draw(graphics, image);
         }
         
         //draw the rest
-        for (LevelObject object : objects)
+        for (LevelObject object : getObjects())
         {
             if (object.getType() == Type.Platform || object.getType() == Type.Ladder)
                 continue;
@@ -421,7 +273,7 @@ public class Board extends Sprite implements Disposable, IElement
         }
         
         //draw all the food pieces
-        for (Food food : foods)
+        for (Food food : getFoods())
         {
             food.render(graphics, image);
         }

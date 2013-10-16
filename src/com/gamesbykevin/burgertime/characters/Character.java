@@ -13,11 +13,13 @@ import java.awt.Rectangle;
  *
  * @author GOD
  */
-public class Character extends LevelObject
+public abstract class Character extends LevelObject
 {
     //time delays
     private static final long DELAY_DEFAULT = TimerCollection.toNanoSeconds(125L);
-    private static final long DELAY_DEFAULT_ENEMY = TimerCollection.toNanoSeconds(250L);
+    private static final long DELAY_DEFAULT_DEATH = TimerCollection.toNanoSeconds(200L);
+    private static final long DELAY_DEFAULT_ENEMY = TimerCollection.toNanoSeconds(125L);
+    private static final long DELAY_DEFAULT_STUNNED = TimerCollection.toNanoSeconds(333L);
     
     //all characters have the same width/height
     protected static final int DIMENSION = 20;
@@ -42,7 +44,7 @@ public class Character extends LevelObject
      */
     public enum Speed
     {
-        SLOW(.05), MEDIUM(.08), FAST(.11);
+        SLOW(.02), MEDIUM(.05), FASTER(.08), FASTEST(.1);
         
         private Speed(final double velocity)
         {
@@ -58,7 +60,7 @@ public class Character extends LevelObject
     }
     
     //the characters speed, default is slow
-    private Speed speed = Speed.SLOW;
+    private Speed speed = Speed.MEDIUM;
     
     public Character(final Type type)
     {
@@ -78,7 +80,7 @@ public class Character extends LevelObject
         return speed.getVelocity();
     }
     
-    protected void setState(final State state)
+    public void setState(final State state)
     {
         super.getSpriteSheet().setCurrent(state);
         super.getSpriteSheet().reset();
@@ -99,7 +101,7 @@ public class Character extends LevelObject
         return (getState() == State.Stunned);
     }
     
-    protected boolean isDead()
+    public boolean isDead()
     {
         return (getState() == State.Die);
     }
@@ -119,17 +121,10 @@ public class Character extends LevelObject
         }
     }
     
-    protected void update(final Board board, final long time) throws Exception
+    protected void update(final long time) throws Exception
     {
         //update sprite sheet
         getSpriteSheet().update(time);
-        
-        //if we are moving
-        if (hasVelocity())
-        {
-            //check for collision
-            checkCollision(board);
-        }
         
         //now set x,y based on the column, row
         super.setX((super.getCol() * Board.WIDTH) - (getWidth()  / 2));
@@ -139,7 +134,7 @@ public class Character extends LevelObject
         super.update();
     }
     
-    private void checkCollision(final Board board)
+    protected void checkCollision(final Board board)
     {
         //get original location
         final double col = getCol();
@@ -304,8 +299,22 @@ public class Character extends LevelObject
                 
                 //setup Attack West
                 animation = new Animation();
+                animation.setLoop(false);
                 animation.add(new Rectangle(260, 20, DIMENSION, DIMENSION), DELAY_DEFAULT);
                 getSpriteSheet().add(animation, State.AttackWest);
+                
+                //remove death animation previously added
+                getSpriteSheet().remove(State.Die);
+                
+                //setup Death since hero x coordinates are a little different
+                animation = new Animation();
+                
+                for (int x = 280; x < 420; x += DIMENSION)
+                {
+                    animation.add(new Rectangle(x, 20, DIMENSION, DIMENSION), DELAY_DEFAULT_DEATH);
+                }
+                
+                getSpriteSheet().add(animation, State.Die);
                 break;
                 
             case EnemyHotdog:
@@ -384,21 +393,21 @@ public class Character extends LevelObject
         //setup Death
         animation = new Animation();
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_DEATH);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_DEATH);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_DEATH);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_DEATH);
         getSpriteSheet().add(animation, State.Die);
 
         //setup stunned
         animation = new Animation();
         startX += 100;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_STUNNED);
         startX += DIMENSION;
-        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_ENEMY);
+        animation.add(new Rectangle(startX, y, DIMENSION, DIMENSION), DELAY_DEFAULT_STUNNED);
         animation.setLoop(true);
         getSpriteSheet().add(animation, State.Stunned);
         
