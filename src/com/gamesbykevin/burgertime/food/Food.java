@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * This class manages the foods current state
  * @author GOD
  */
 public class Food extends LevelObject
@@ -216,7 +216,8 @@ public class Food extends LevelObject
         super.setDefaults(animation, type);
     }
     
-    public void render(final Graphics graphics, final Image image)
+    @Override
+    public void draw(final Graphics graphics, final Image image)
     {
         for (int index = 0; index < parts.size(); index++)
         {

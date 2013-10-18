@@ -1,7 +1,9 @@
 package com.gamesbykevin.burgertime.board;
 
+import com.gamesbykevin.framework.base.Cell;
 import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.labyrinth.Location;
+import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.food.Food;
@@ -14,7 +16,7 @@ import java.util.Random;
  * This class will be responsible for generating the levels
  * @author GOD
  */
-public abstract class Generator extends Sprite
+public abstract class Generator extends Sprite implements Disposable
 {
     //all of the objects on the board
     private List <LevelObject> objects;
@@ -36,13 +38,13 @@ public abstract class Generator extends Sprite
     private static final int FOOD_COUNT = Food.getTypeFood().size();
     
     //list of valid rows used to generate random level
-    final List<Integer> validRows;
+    private List<Integer> validRows;
     
     //dimensions of each cell on the board
     public static final int WIDTH = 24;
     public static final int HEIGHT = 20;
     
-    public Generator(final Engine engine, final Random random)
+    public Generator(final Random random)
     {
         //set the boundaries
         super.setBounds(0, COLUMNS, 0, ROWS);
@@ -105,9 +107,6 @@ public abstract class Generator extends Sprite
             }
         }
         
-        //temporary food object
-        Food food;
-        
         //get all food types that will be placed on the board
         final List<LevelObject.Type> foodTypes = Food.getTypeFood();
         
@@ -126,7 +125,7 @@ public abstract class Generator extends Sprite
                     final int row = validRows.get(index);
                     
                     //add food
-                    food = new Food(foodTypes.get(index));
+                    Food food = new Food(foodTypes.get(index));
                     food.setLocation(((col - 2) * WIDTH) + (WIDTH / 2) - (food.getWidth() / 2), (row * HEIGHT) + HEIGHT - food.getHeight());
                     food.setCol(col - 2);
                     food.setRow(row);
@@ -135,17 +134,79 @@ public abstract class Generator extends Sprite
             }
         }
         
-        /*
-        //then randomly remove unused platforms and some of the ladders
-        final int limit = objects.size() - 30;
+        //locations where we can't remove level objects (ladder/platform)
+        final List<Cell> safe = new ArrayList<>();
         
-        while(objects.size() > limit)
+        for (Food food : getFoods())
         {
-            final int index = random.nextInt(objects.size());
+            //food location is safe
+            safe.add(new Cell(food.getCol(), food.getRow()));
             
-            objects.remove(index);
+            //also directly east and west are safe as well
+            safe.add(new Cell(food.getCol() - 1, food.getRow()));
+            safe.add(new Cell(food.getCol() + 1, food.getRow()));
         }
-        */
+        
+        
+        /**
+         * now that a full board has been created with food we need to find a way to remove parts of the level
+         * 1. Can't remove any locations where food exists or directly east or west of those locations
+         */
+        //
+    }
+    
+    @Override
+    public void dispose()
+    {
+        super.dispose();
+        
+        if (!objects.isEmpty())
+        {
+            for (LevelObject object : objects)
+            {
+                if (object != null)
+                    object.dispose();
+                
+                object = null;
+            }
+            
+            objects.clear();
+        }
+        
+        objects = null;
+        
+        if (!map.isEmpty())
+        {
+            for (Location location : map)
+            {
+                if (location != null)
+                    location.dispose();
+                
+                location = null;
+            }
+            
+            map.clear();
+        }
+        
+        map = null;
+    
+        if (!foods.isEmpty())
+        {
+            for (Food food : foods)
+            {
+                if (food != null)
+                    food.dispose();
+                
+                food = null;
+            }
+            
+            foods.clear();
+        }
+        
+        foods = null;
+    
+        validRows.clear();
+        validRows = null;
     }
     
     protected List<LevelObject> getObjects()

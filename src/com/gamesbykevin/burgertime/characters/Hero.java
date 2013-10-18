@@ -2,21 +2,16 @@ package com.gamesbykevin.burgertime.characters;
 
 import com.gamesbykevin.framework.input.Keyboard;
 
-import com.gamesbykevin.burgertime.board.Board;
 import com.gamesbykevin.burgertime.engine.Engine;
-import com.gamesbykevin.burgertime.food.Food;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
-import java.awt.Color;
 
 import java.awt.event.KeyEvent;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ * Here is where we will manage the keyboard input among other things for our hero
  * @author GOD
  */
 public final class Hero extends Character implements ICharacter
@@ -24,11 +19,64 @@ public final class Hero extends Character implements ICharacter
     //the salt the hero can dump on the enemies
     private List<LevelObject> projectiles;
     
+    //the number of lives
+    private int lives = 5;
+    
+    //the number of pepper throws
+    private int pepper = 5;
+    
     public Hero()
     {
         super(Type.Hero);
         
         this.projectiles = new ArrayList<>();
+    }
+    
+    @Override
+    public void dispose()
+    {
+        super.dispose();
+        
+        for (LevelObject projectile : projectiles)
+        {
+            if (projectile != null)
+                projectile.dispose();
+            
+            projectile = null;
+        }
+        
+        projectiles.clear();
+        projectiles = null;
+    }
+    
+    public void addPepper()
+    {
+        this.pepper++;
+    }
+    
+    public void removePepper()
+    {
+        this.pepper--;
+    }
+    
+    public void addLife()
+    {
+        this.lives++;
+    }
+    
+    public void removeLife()
+    {
+        this.lives--;
+    }
+    
+    public boolean hasPepper()
+    {
+        return (pepper != 0);
+    }
+    
+    public boolean hasLives()
+    {
+        return (lives != 0);
     }
     
     @Override
@@ -47,8 +95,9 @@ public final class Hero extends Character implements ICharacter
             //if we can't move reset the velocity
             resetVelocity();
             
-            //we can't continue any more
-            return;
+            //don't continue if we are dead
+            if (isDead())
+                return;
         }
         
         //if moving, check for collision with the board
@@ -166,41 +215,50 @@ public final class Hero extends Character implements ICharacter
         //we want to throw pepper
         if (keyboard.hasKeyPressed(KeyEvent.VK_SPACE) && projectiles.isEmpty())
         {
-            switch(getState())
+            if (hasPepper())
             {
-                case MoveSouth:
-                    super.setState(State.AttackSouth);
-                    addProjectile(getX(), getY() + DIMENSION, super.getCol(), super.getRow() + .5);
-                    break;
-                    
-                case MoveEast:
-                    super.setState(State.AttackEast);
-                    addProjectile(getX() + DIMENSION, getY(), super.getCol() + .5, super.getRow());
-                    break;
-                    
-                case MoveWest:
-                    super.setState(State.AttackWest);
-                    addProjectile(getX() - DIMENSION, getY(), super.getCol() - .5, super.getRow());
-                    break;
-                    
-                case MoveNorth:
-                    super.setState(State.AttackNorth);
-                    addProjectile(getX(), getY() - DIMENSION, super.getCol(), super.getRow() - .5);
-                    break;
+                //remove pepper from our count
+                removePepper();
+
+                switch(getState())
+                {
+                    case MoveSouth:
+                        super.setState(State.AttackSouth);
+                        addProjectile(getX(), getY() + DIMENSION, super.getCol(), super.getRow() + .5);
+                        break;
+
+                    case MoveEast:
+                        super.setState(State.AttackEast);
+                        addProjectile(getX() + DIMENSION, getY(), super.getCol() + .5, super.getRow());
+                        break;
+
+                    case MoveWest:
+                        super.setState(State.AttackWest);
+                        addProjectile(getX() - DIMENSION, getY(), super.getCol() - .5, super.getRow());
+                        break;
+
+                    case MoveNorth:
+                        super.setState(State.AttackNorth);
+                        addProjectile(getX(), getY() - DIMENSION, super.getCol(), super.getRow() - .5);
+                        break;
+                }
             }
         }
     }
     
     /**
-     * Add a projectile at the specified x,y coordinates
-     * @param x
+     * Add a projectile at the specified x,y coordinates and column, row
+     * @param x 
      * @param y
+     * @param col
+     * @param row
      */
     private void addProjectile(final double x, final double y, final double col, final double row)
     {
-        //make sure we aren't pausing the animation
+        //don't pause hero animation
         super.getSpriteSheet().setPause(false);
         
+        //create our projectile
         LevelObject projectile = new LevelObject(Type.Salt);
         
         //set the location
@@ -215,7 +273,10 @@ public final class Hero extends Character implements ICharacter
         
         //set the image
         projectile.setImage(super.getImage());
-                
+
+        //don't pause animation
+        projectile.getSpriteSheet().setPause(false);
+        
         //add to list
         projectiles.add(projectile);
     }
@@ -225,12 +286,10 @@ public final class Hero extends Character implements ICharacter
     {
         super.draw(graphics);
         
+        //draw the projectiles
         for (LevelObject projectile : projectiles)
         {
             projectile.draw(graphics);
         }
-        
-        graphics.setColor(Color.WHITE);
-        graphics.drawString("(" + getCol() + "," + getRow() + ")", 150, 400);
     }
 }

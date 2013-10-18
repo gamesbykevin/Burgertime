@@ -1,6 +1,7 @@
 package com.gamesbykevin.burgertime.characters;
 
 import com.gamesbykevin.framework.base.Animation;
+import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.burgertime.board.Board;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
@@ -10,10 +11,10 @@ import com.gamesbykevin.framework.util.TimerCollection;
 import java.awt.Rectangle;
 
 /**
- *
+ * Enemy and Hero are Characters
  * @author GOD
  */
-public abstract class Character extends LevelObject
+public abstract class Character extends LevelObject implements Disposable
 {
     //time delays
     private static final long DELAY_DEFAULT = TimerCollection.toNanoSeconds(125L);
@@ -68,6 +69,12 @@ public abstract class Character extends LevelObject
         
         //set default width/height
         super.setDimensions(DIMENSION, DIMENSION);
+    }
+    
+    @Override
+    public void dispose()
+    {
+        super.dispose();
     }
     
     protected void setSpeed(final Speed speed)

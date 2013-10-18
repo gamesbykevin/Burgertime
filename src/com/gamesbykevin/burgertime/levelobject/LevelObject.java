@@ -9,9 +9,6 @@ import com.gamesbykevin.framework.util.TimerCollection;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Any object on the screen is a level object
  * @author GOD
@@ -48,6 +45,12 @@ public class LevelObject extends Sprite implements IElement
         {
             e.printStackTrace();
         }
+    }
+    
+    @Override
+    public void dispose()
+    {
+        super.dispose();
     }
     
     public Type getType()

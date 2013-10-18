@@ -32,9 +32,9 @@ public final class Board extends Generator implements Disposable, IElement
     
     public Board(final Engine engine, final Random random)
     {
-        super(engine, random);
+        super(random);
         
-        //store sprite sheet
+        //store sprite sheet in one place for the board
         this.image = engine.getResources().getGameImage(GameImage.Keys.SpriteSheet);
     }
     
@@ -76,7 +76,7 @@ public final class Board extends Generator implements Disposable, IElement
     @Override
     public void dispose()
     {
-        
+        super.dispose();
     }
     
     @Override
@@ -275,7 +275,7 @@ public final class Board extends Generator implements Disposable, IElement
         //draw all the food pieces
         for (Food food : getFoods())
         {
-            food.render(graphics, image);
+            food.draw(graphics, image);
         }
     }
 }

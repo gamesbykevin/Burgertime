@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * 
+ * Here lies the logic of the enemy
  * @author GOD
  */
 public final class Enemy extends Character implements ICharacter
@@ -51,6 +51,22 @@ public final class Enemy extends Character implements ICharacter
         
         //our game timer for stun time
         this.timer = new Timer(DELAY_STUNNED);
+    }
+    
+    @Override
+    public void dispose()
+    {
+        super.dispose();
+        
+        steps.clear();
+        steps = null;
+        
+        current = null;
+        
+        ai.dispose();
+        ai = null;
+        
+        timer = null;
     }
     
     public static Type getRandom(final Random random)

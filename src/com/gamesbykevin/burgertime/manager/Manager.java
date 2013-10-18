@@ -131,10 +131,10 @@ public final class Manager implements Disposable, IElement
         //draw the board first
         this.board.render(graphics);
         
+        //then draw the enemies
+        this.enemies.render(graphics);
+        
         //then draw the hero
         this.hero.render(graphics);
-
-        //finally draw the enemies
-        this.enemies.render(graphics);
     }
 }
