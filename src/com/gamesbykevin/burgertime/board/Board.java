@@ -1,19 +1,14 @@
 package com.gamesbykevin.burgertime.board;
 
-import com.gamesbykevin.framework.base.Sprite;
-import com.gamesbykevin.framework.labyrinth.Location;
-import com.gamesbykevin.framework.labyrinth.Location.Wall;
 import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.burgertime.characters.Character.Speed;
-import com.gamesbykevin.burgertime.characters.Character.State;
-import com.gamesbykevin.burgertime.characters.Enemy;
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.food.Food;
-import com.gamesbykevin.burgertime.resources.GameImage;
-import com.gamesbykevin.burgertime.shared.IElement;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
 import com.gamesbykevin.burgertime.levelobject.LevelObject.Type;
+import com.gamesbykevin.burgertime.resources.GameImage;
+import com.gamesbykevin.burgertime.shared.IElement;
 
 import java.awt.Graphics;
 import java.awt.Image;
@@ -91,7 +86,7 @@ public final class Board extends Generator implements Disposable, IElement
                 if (food.hasDrop())
                 {
                     //set drop speed
-                    food.setVelocityY(Speed.FASTER.getVelocity());
+                    food.setVelocityY(Speed.FASTEST.getVelocity());
                     
                     //set the start row when dropping starts
                     food.setRowStart(food.getRow() + 1);

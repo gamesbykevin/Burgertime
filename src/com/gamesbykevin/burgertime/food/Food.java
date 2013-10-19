@@ -73,17 +73,21 @@ public class Food extends LevelObject
     {
         List<Type> food = new ArrayList<>();
         
+        //first add burger top
         food.add(Type.BurgerTop);
         
         for (Type type : Type.values())
         {
+            //we add the burger top/bottom first and last so don't add it here
             if (type == Type.BurgerTop || type == Type.BurgerBottom)
                 continue;
             
+            //make sure this is type food, then add
             if (isType(type))
                 food.add(type);
         }
         
+        //finally add burger bottom
         food.add(Type.BurgerBottom);
         
         return food;

@@ -2,14 +2,16 @@ package com.gamesbykevin.burgertime.menu.layer;
 
 import com.gamesbykevin.burgertime.resources.MenuAudio;
 import com.gamesbykevin.burgertime.resources.MenuImage;
-import com.gamesbykevin.framework.menu.Layer;
-import com.gamesbykevin.framework.menu.Option;
+import com.gamesbykevin.framework.menu.*;
+import com.gamesbykevin.framework.resources.Audio;
 import com.gamesbykevin.framework.util.Timer;
 import com.gamesbykevin.framework.util.TimerCollection;
 
 import com.gamesbykevin.burgertime.engine.Engine;
+import com.gamesbykevin.burgertime.characters.Character.*;
 import com.gamesbykevin.burgertime.manager.Manager.*;
 import com.gamesbykevin.burgertime.menu.CustomMenu.*;
+import com.gamesbykevin.burgertime.menu.option.*;
 
 public class Options extends Layer implements LayerRules
 {
@@ -36,32 +38,17 @@ public class Options extends Layer implements LayerRules
         //since there are options how big should the container be
         setOptionContainerRatio(RATIO);
         
-        //setup options (if any)
-        setup(engine);
-    }
-    
-    @Override
-    public void setup(final Engine engine) throws Exception
-    {
-        //setup options here
-        Option tmp;
-            
-        tmp = new Option("Sound: ");
-        for (Toggle toggle : Toggle.values())
-        {
-            tmp.add(toggle.toString(), engine.getResources().getMenuAudio(MenuAudio.Keys.OptionChange));
-        }
-        super.add(OptionKey.Sound, tmp);
+        Audio audio = engine.getResources().getMenuAudio(MenuAudio.Keys.OptionChange);
         
-        tmp = new Option("FullScreen: ");
-        for (Toggle toggle : Toggle.values())
-        {
-            tmp.add(toggle.toString(), engine.getResources().getMenuAudio(MenuAudio.Keys.OptionChange));
-        }
-        super.add(OptionKey.FullScreen, tmp);
-        
-        tmp = new Option(LayerKey.MainTitle);
-        tmp.add("Go Back", null);
-        super.add(OptionKey.GoBack, tmp);
+        //add options
+        super.add(OptionKey.Sound,          new Sound(audio));
+        super.add(OptionKey.FullScreen,     new FullScreen(audio));
+        super.add(OptionKey.TimeLimit,      new TimeLimit(audio));
+        super.add(OptionKey.Speed,          new CharacterSpeed(audio));
+        super.add(OptionKey.EnemyRespawn,   new EnemyRespawn(audio));
+        super.add(OptionKey.EnemyLimit,     new EnemyCount(audio));
+        super.add(OptionKey.HeroLives,      new HeroLives(audio));
+        super.add(OptionKey.HeroPepper,     new PepperLimit(audio));
+        super.add(OptionKey.GoBack,         new OptionsGoBack());
     }
 }

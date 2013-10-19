@@ -20,13 +20,6 @@ public class NoFocus extends Layer implements LayerRules
         //when the layer is complete should we transition to the next or pause
         setPause(true);
         
-        //setup options (if any)
-        setup(engine);
-    }
-    
-    @Override
-    public void setup(final Engine engine)
-    {
         //no options here to setup
     }
 }

@@ -10,13 +10,6 @@ public class StartGame extends Layer implements LayerRules
         //the layer will have the given transition and screen size
         super(Layer.Type.NONE, engine.getMain().getScreen());
         
-        //setup options (if any)
-        setup(engine);
-    }
-    
-    @Override
-    public void setup(final Engine engine)
-    {
         //no options here to setup
-    }    
+    }
 }

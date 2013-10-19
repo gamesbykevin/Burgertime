@@ -29,13 +29,6 @@ public class Credits extends Layer implements LayerRules
         //what is the duration of the current layer
         setTimer(new Timer(TimerCollection.toNanoSeconds(7000L)));
         
-        //setup options (if any)
-        setup(engine);
-    }
-    
-    @Override
-    public void setup(final Engine engine)
-    {
         //no options here to setup
     }
 }

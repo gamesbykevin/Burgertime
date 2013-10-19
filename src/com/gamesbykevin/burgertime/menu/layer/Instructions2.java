@@ -27,13 +27,6 @@ public class Instructions2 extends Layer implements LayerRules
         //is there a time limit for this layer
         setTimer(null);
         
-        //setup options (if any)
-        setup(engine);
-    }
-    
-    @Override
-    public void setup(final Engine engine)
-    {
         //no options here to setup
     }
 }

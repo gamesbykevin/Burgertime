@@ -45,7 +45,7 @@ public abstract class Character extends LevelObject implements Disposable
      */
     public enum Speed
     {
-        SLOW(.02), MEDIUM(.05), FASTER(.08), FASTEST(.1);
+        SLOW(.02), MEDIUM(.025), FAST(.03), FASTEST(.04);
         
         private Speed(final double velocity)
         {
@@ -61,7 +61,7 @@ public abstract class Character extends LevelObject implements Disposable
     }
     
     //the characters speed, default is slow
-    private Speed speed = Speed.MEDIUM;
+    private Speed speed = Speed.SLOW;
     
     public Character(final Type type)
     {
@@ -77,7 +77,7 @@ public abstract class Character extends LevelObject implements Disposable
         super.dispose();
     }
     
-    protected void setSpeed(final Speed speed)
+    public void setSpeed(final Speed speed)
     {
         this.speed = speed;
     }

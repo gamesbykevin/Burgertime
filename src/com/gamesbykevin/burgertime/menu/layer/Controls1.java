@@ -27,13 +27,6 @@ public class Controls1 extends Layer implements LayerRules
         //what is the duration of the current layer
         setTimer(null);
         
-        //setup options (if any)
-        setup(engine);
-    }
-    
-    @Override
-    public void setup(final Engine engine)
-    {
         //no options here to setup
     }
 }

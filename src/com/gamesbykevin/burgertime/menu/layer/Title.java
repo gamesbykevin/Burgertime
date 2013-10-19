@@ -30,13 +30,6 @@ public class Title extends Layer implements LayerRules
         //this layer will be active for 2 seconds
         setTimer(new Timer(TimerCollection.toNanoSeconds(2000L)));
         
-        //setup options (if any)
-        setup(engine);
-    }
-    
-    @Override
-    public void setup(final Engine engine)
-    {
         //no options here to setup
     }
 }

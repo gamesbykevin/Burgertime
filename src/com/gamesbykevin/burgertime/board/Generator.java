@@ -1,13 +1,16 @@
 package com.gamesbykevin.burgertime.board;
 
-import com.gamesbykevin.framework.base.Cell;
 import com.gamesbykevin.framework.base.Sprite;
+import com.gamesbykevin.framework.labyrinth.Labyrinth;
+import com.gamesbykevin.framework.labyrinth.Labyrinth.Algorithm;
 import com.gamesbykevin.framework.labyrinth.Location;
+import com.gamesbykevin.framework.labyrinth.Location.Wall;
 import com.gamesbykevin.framework.resources.Disposable;
 
-import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.food.Food;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
+import com.gamesbykevin.burgertime.levelobject.LevelObject.Type;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -33,12 +36,6 @@ public abstract class Generator extends Sprite implements Disposable
     
     //rows where the characters can move amungst
     protected static final int VALID_ROWS = 10;
-
-    //the number of rows to reserve for food
-    private static final int FOOD_COUNT = Food.getTypeFood().size();
-    
-    //list of valid rows used to generate random level
-    private List<Integer> validRows;
     
     //dimensions of each cell on the board
     public static final int WIDTH = 24;
@@ -52,107 +49,182 @@ public abstract class Generator extends Sprite implements Disposable
         //create empty list of level objects
         this.objects = new ArrayList<>();
         
-        //create empty list of valid rows
-        this.validRows = new ArrayList<>();
-        
         //create empty list of food
         this.foods = new ArrayList<>();
         
-        //create a full empty board
-        for (int row = 0; row < ROWS; row++)
+        try
         {
+            //use random maze algorithm to generate
+            Algorithm algorithm = Algorithm.values()[random.nextInt(Algorithm.values().length)];
+            
+            //create new maze object with the given number of columns and rows
+            Labyrinth maze = new Labyrinth(COLUMNS, VALID_ROWS + 1, algorithm);
+            
+            //this is also the same start column/row for the hero
+            maze.setStart(COLUMNS / 2, VALID_ROWS);
+            
+            //now generate our maze
+            maze.generate();
+            
+            //get the cells from the generated maze
+            List<Location> cells = maze.getLocations();
+            
+            for (Location cell : cells)
+            {
+                //if there is no wall to the west or east add platform
+                if (!cell.hasWall(Wall.East) || !cell.hasWall(Wall.West))
+                    addPlatform(cell.getCol(), cell.getRow());
+                
+                //if there is no wall to the north or south add ladder
+                if (!cell.hasWall(Wall.South) || !cell.hasWall(Wall.North))
+                {
+                    //we won't put a ladder in the first row
+                    if (cell.getRow() != 0)
+                        addLadder(cell.getCol(), cell.getRow());
+                }
+            }
+            
+            //valid rows
+            final List<Integer> valid = new ArrayList<>();
+            
+            //all of the types of food
+            final List<Type> types = Food.getTypeFood();
+            
+            //add burger container on the very bottom
             for (int col = 0; col < COLUMNS; col++)
             {
-                LevelObject obj;
+                //all columns in the top row will have a platform
+                addPlatform(col, 0);
                 
-                //bottom area, there will be empty space and the container
-                if (row > VALID_ROWS)
+                //all columns in the bottom row will have a platform
+                addPlatform(col, VALID_ROWS);
+                
+                //place burger container every 4 columns skipping the first column
+                if (col > 0 && col % 4 == 0)
                 {
-                    //make sure we are on the bottom
-                    if (row == ROWS - 1)
+                    final int column = col - 2;
+                    
+                    //add burger container
+                    addBurgerContainer(column, ROWS - 1);
+
+                    //clear list
+                    valid.clear();
+                    
+                    //locate valid rows to place food on
+                    for (int row = 0; row <= VALID_ROWS; row++)
                     {
-                        if (col > 0 && col % 4 == 0)
+                        //if there is a platform or a ladder we can add food here
+                        if (hasObject(Type.Platform, column, row) || hasObject(Type.Ladder, column, row))
+                            valid.add(row);
+                        
+                        //if there is a platform here
+                        if (hasObject(Type.Platform, column, row))
                         {
-                            obj = new LevelObject(LevelObject.Type.BurgerContainer);
-                            obj.setLocation(((col - 2) * WIDTH) + (WIDTH / 2) - (obj.getWidth() / 2), (row * HEIGHT) + HEIGHT);
-                            obj.setCol(col - 2);
-                            obj.setRow(row);
-                            objects.add(obj);
-                        }
-                    }
-                }
-                else
-                {
-                    //ladders don't get placed on the first row
-                    if (row > 0)
-                    {
-                        //the ladder will be placed on every even column
-                        if (col % 2 == 0)
-                        {
-                            obj = new LevelObject(LevelObject.Type.Ladder);
-                            obj.setLocation((col * WIDTH) + (WIDTH / 2) - (obj.getWidth() / 2), (row * HEIGHT));
-                            obj.setCol(col);
-                            obj.setRow(row);
-                            objects.add(obj);
+                            //if there is no platform to the east or west
+                            if (!hasObject(Type.Platform, column - 1, row) && !hasObject(Type.Platform, column + 1, row))
+                            {
+                                //remove platform
+                                removeObject(Type.Platform, column, row);
+                            }
+                            else
+                            {
+                                //add platform
+                                addPlatform(column - 1, row);
+                                addPlatform(column + 1, row);
+                            }
                         }
                     }
                     
-                    //add a plaform everywhere
-                    obj = new LevelObject(LevelObject.Type.Platform);
-                    obj.setLocation(col * WIDTH, (row * HEIGHT) + HEIGHT);
-                    obj.setCol(col);
-                    obj.setRow(row);
-                    objects.add(obj);
-                }
-            }
-        }
-        
-        //get all food types that will be placed on the board
-        final List<LevelObject.Type> foodTypes = Food.getTypeFood();
-        
-        //now randomly place the food pieces
-        for (int col = 0; col < COLUMNS; col++)
-        {
-            //we place food every 4 columns
-            if (col > 0 && col % 4 == 0)
-            {
-                //create random list of rows to place all food
-                resetValidRows(random);
-                
-                //now add food for every existing row left
-                for (int index=0; index < validRows.size(); index++)
-                {
-                    final int row = validRows.get(index);
+                    while(valid.size() > types.size())
+                    {
+                        //remove random index
+                        valid.remove(random.nextInt(valid.size()));
+                    }
                     
-                    //add food
-                    Food food = new Food(foodTypes.get(index));
-                    food.setLocation(((col - 2) * WIDTH) + (WIDTH / 2) - (food.getWidth() / 2), (row * HEIGHT) + HEIGHT - food.getHeight());
-                    food.setCol(col - 2);
-                    food.setRow(row);
-                    foods.add(food);
+                    for (int index = 0; index < valid.size(); index++)
+                    {
+                        final int row = valid.get(index);
+                        
+                        final Food.Type type;
+                        
+                        if (index == 0)
+                        {
+                            type = Food.Type.BurgerTop;
+                        }
+                        else if (index == valid.size() - 1)
+                        {
+                            type = Food.Type.BurgerBottom;
+                        }
+                        else
+                        {
+                            type = types.get(index);
+                        }
+                        
+                        //add food
+                        addFood(type, column, row);
+                        
+                        //make sure there are platforms here so we can make food drop
+                        addPlatform(column, row);
+                        addPlatform(column - 1, row);
+                        addPlatform(column + 1, row);
+                        
+                    }
                 }
             }
         }
-        
-        //locations where we can't remove level objects (ladder/platform)
-        final List<Cell> safe = new ArrayList<>();
-        
-        for (Food food : getFoods())
+        catch(Exception e)
         {
-            //food location is safe
-            safe.add(new Cell(food.getCol(), food.getRow()));
-            
-            //also directly east and west are safe as well
-            safe.add(new Cell(food.getCol() - 1, food.getRow()));
-            safe.add(new Cell(food.getCol() + 1, food.getRow()));
+            e.printStackTrace();
         }
+    }
+    
+    private void addFood(Food.Type type, final double col, final double row)
+    {
+        Food food = new Food(type);
+        food.setLocation((col * WIDTH) + (WIDTH / 2) - (food.getWidth() / 2), (row * HEIGHT) + HEIGHT - food.getHeight());
+        food.setCol(col);
+        food.setRow(row);
+        foods.add(food);
+    }
+    
+    private void addPlatform(final double col, final double row)
+    {
+        LevelObject obj = new LevelObject(Type.Platform);
+        obj.setLocation(col * WIDTH, (row * HEIGHT) + HEIGHT);
+        obj.setCol(col);
+        obj.setRow(row);
         
+        addObject(obj);
+    }
+    
+    private void addLadder(final double col, final double row)
+    {
+        LevelObject obj = new LevelObject(Type.Ladder);
+        obj.setLocation((col * WIDTH) + (WIDTH / 2) - (obj.getWidth() / 2), (row * HEIGHT));
+        obj.setCol(col);
+        obj.setRow(row);
         
-        /**
-         * now that a full board has been created with food we need to find a way to remove parts of the level
-         * 1. Can't remove any locations where food exists or directly east or west of those locations
-         */
-        //
+        addObject(obj);
+    }
+    
+    private void addBurgerContainer(final double col, final double row)
+    {
+        LevelObject obj = new LevelObject(Type.BurgerContainer);
+        obj.setLocation((col * WIDTH) + (WIDTH / 2) - (obj.getWidth() / 2), (row * HEIGHT) + HEIGHT);
+        obj.setCol(col);
+        obj.setRow(row);
+        
+        addObject(obj);
+    }
+    
+    private void addObject(final LevelObject object)
+    {
+        //if object exists at the location don't add
+        if (hasObject(object.getType(), object.getCol(), object.getRow()))
+            return;
+
+        //add object to List
+        objects.add(object);
     }
     
     @Override
@@ -204,9 +276,6 @@ public abstract class Generator extends Sprite implements Disposable
         }
         
         foods = null;
-    
-        validRows.clear();
-        validRows = null;
     }
     
     protected List<LevelObject> getObjects()
@@ -217,28 +286,6 @@ public abstract class Generator extends Sprite implements Disposable
     protected List<Food> getFoods()
     {
         return this.foods;
-    }
-    
-    private void resetValidRows(final Random random)
-    {
-        //clear list
-        validRows.clear();
-        
-        //populate the list with valid rows
-        for (int i=0; i <= VALID_ROWS; i++)
-        {
-            validRows.add(i);
-        }
-        
-        //remove random rows until we reach the amount needed to reserve
-        while(validRows.size() > FOOD_COUNT)
-        {
-            //get random index
-            final int index = random.nextInt(validRows.size());
-
-            //remove random row
-            validRows.remove(index);
-        }
     }
     
     /**
@@ -259,19 +306,19 @@ public abstract class Generator extends Sprite implements Disposable
                     Location current = new Location(col, row);
                     
                     //if there is a platform to the west, remove wall
-                    if (getObject(LevelObject.Type.Platform, current.getCol() - 1, current.getRow()) != null)
+                    if (getObject(Type.Platform, current.getCol() - 1, current.getRow()) != null)
                         current.remove(Location.Wall.West);
                     
                     //if there is a platform to the east, remove wall
-                    if (getObject(LevelObject.Type.Platform, current.getCol() + 1, current.getRow()) != null)
+                    if (getObject(Type.Platform, current.getCol() + 1, current.getRow()) != null)
                         current.remove(Location.Wall.East);
                     
                     //if there is a ladder in the current location, remove wall
-                    if (getObject(LevelObject.Type.Ladder, current.getCol(), current.getRow()) != null)
+                    if (getObject(Type.Ladder, current.getCol(), current.getRow()) != null)
                         current.remove(Location.Wall.North);
                     
                     //if there is a ladder to the south, remove wall
-                    if (getObject(LevelObject.Type.Ladder, current.getCol(), current.getRow() + 1) != null)
+                    if (getObject(Type.Ladder, current.getCol(), current.getRow() + 1) != null)
                         current.remove(Location.Wall.South);
                     
                     //add location to map
@@ -283,7 +330,12 @@ public abstract class Generator extends Sprite implements Disposable
         return this.map;
     }
     
-    public LevelObject getObject(final LevelObject.Type type, final LevelObject object)
+    private boolean hasObject(final Type type, final double column, final double row)
+    {
+        return (getObject(type, column, row) != null);
+    }
+    
+    public LevelObject getObject(final Type type, final LevelObject object)
     {
         return getObject(type, object.getCol(), object.getRow());
     }
@@ -296,7 +348,7 @@ public abstract class Generator extends Sprite implements Disposable
      * @param row - Self explanatory
      * @return LevelObject if the specified Type was not found at the specified location null is returned
      */
-    public LevelObject getObject(final LevelObject.Type type, final double column, final double row)
+    public LevelObject getObject(final Type type, final double column, final double row)
     {
         //set the location we are checking as the current
         super.setCol(column);
@@ -316,5 +368,25 @@ public abstract class Generator extends Sprite implements Disposable
         }
         
         return null;
+    }
+    
+    private void removeObject(final Type type, final double column, final double row)
+    {
+        for (int index = 0; index < getObjects().size(); index++)
+        {
+            LevelObject object = getObjects().get(index);
+            
+            //if the type is not the same skip to next
+            if (object.getType() != type)
+                continue;
+            
+            //if the column and row are equal
+            if ((int)object.getCol() == (int)column && (int)object.getRow() == (int)row)
+            {
+                //remove object
+                objects.remove(index);
+            }
+        }
+        
     }
 }

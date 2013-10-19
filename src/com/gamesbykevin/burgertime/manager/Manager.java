@@ -1,25 +1,22 @@
 package com.gamesbykevin.burgertime.manager;
 
+import com.gamesbykevin.framework.menu.Menu;
 import com.gamesbykevin.framework.resources.Disposable;
 import com.gamesbykevin.framework.util.Timer;
 import com.gamesbykevin.framework.util.TimerCollection;
 
 import com.gamesbykevin.burgertime.board.Board;
+import com.gamesbykevin.burgertime.characters.*;
+import com.gamesbykevin.burgertime.characters.Character.Speed;
 import com.gamesbykevin.burgertime.engine.Engine;
+import com.gamesbykevin.burgertime.menu.CustomMenu.Toggle;
 import com.gamesbykevin.burgertime.menu.CustomMenu.LayerKey;
 import com.gamesbykevin.burgertime.menu.CustomMenu.OptionKey;
-import com.gamesbykevin.burgertime.shared.IElement;
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import com.gamesbykevin.burgertime.resources.*;
+import com.gamesbykevin.burgertime.shared.IElement;
 
-import com.gamesbykevin.burgertime.characters.*;
-import com.gamesbykevin.burgertime.levelobject.LevelObject;
+import java.awt.Graphics;
+import java.util.Random;
 
 /**
  * The parent class that contains all of the game elements
@@ -49,8 +46,26 @@ public final class Manager implements Disposable, IElement
      */
     public Manager(final Engine engine) throws Exception
     {
-        //the mode of game play
-        //this.mode = Mode.values()[engine.getMenu().getOptionSelectionIndex(LayerKey.Options, OptionKey.Mode)];
+        //get the menu object
+        final Menu menu = engine.getMenu();
+        
+        //the speed of the characters
+        final int speedIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.Speed);
+        
+        //the number of lives
+        final int livesIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.HeroLives);
+        
+        //the number of peppers
+        final int pepperIndex = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.HeroPepper);
+        
+        //do enemies respawn when killed
+        final boolean respawn = (Toggle.values()[menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.EnemyRespawn)] == Toggle.On);
+        
+        //are we timed to solve the  maze
+        final boolean timed = (Toggle.values()[menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.TimeLimit)] == Toggle.On);
+        
+        //the number of enemies that can be out at 1 time
+        final int enemyLimit = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.EnemyLimit) + 1;
         
         //our random number generator
         this.random = new Random(seed);
@@ -63,14 +78,32 @@ public final class Manager implements Disposable, IElement
         //create our hero object
         this.hero = new Hero();
         this.hero.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
-        this.hero.setCol(8.5);
-        this.hero.setRow(10.5);
 
         //set the boundaries so we know what is considered in bounds
         this.hero.setBounds(board);
         
+        //set the speed of our hero, NOTE: Hero will always move faster than enemy
+        this.hero.setSpeed(Speed.values()[speedIndex + 1]);
+        
+        //set the number of lives
+        if (livesIndex > 0)
+            this.hero.setLives(livesIndex);
+        
+        //set the number of peppers
+        if (pepperIndex > 0)
+            this.hero.setPepper(pepperIndex);
+        
         //create new object to manage our enemies
         this.enemies = new Enemies();
+        
+        //set the number of enemies
+        this.enemies.setLimit(enemyLimit);
+        
+        //do we respawn enemies after death
+        this.enemies.setRespawn(respawn);
+        
+        //set the speed of all the enemies
+        this.enemies.setSpeed(Speed.values()[speedIndex]);
     }
     
     public Enemies getEnemies()

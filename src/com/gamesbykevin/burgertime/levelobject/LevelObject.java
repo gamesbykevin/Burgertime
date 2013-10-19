@@ -18,16 +18,16 @@ public class LevelObject extends Sprite implements IElement
     public enum Type
     {
         Hero, 
-        EnemyHotdog, EnemyEgg, EnemyPickle, EnemyCarrot, EnemyOnion,
-        Ladder,
-        Platform,
-        BurgerContainer,
-        BurgerTop, BurgerBottom,
-        Meat,
-        Cheese,
-        Lettuce,
-        Tomato,
-        Salt,
+        EnemyHotdog, EnemyEgg, EnemyPickle, EnemyCarrot, EnemyOnion, 
+        Ladder, 
+        Platform, 
+        BurgerContainer, 
+        BurgerTop, BurgerBottom, 
+        Meat, 
+        Cheese, 
+        Lettuce, 
+        Tomato, 
+        Salt, 
     }
     
     private static final long DELAY = TimerCollection.toNanoSeconds(150L);

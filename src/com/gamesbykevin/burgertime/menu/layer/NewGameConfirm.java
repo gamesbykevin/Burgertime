@@ -1,10 +1,10 @@
 package com.gamesbykevin.burgertime.menu.layer;
 
 import com.gamesbykevin.framework.menu.Layer;
-import com.gamesbykevin.framework.menu.Option;
 
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.menu.CustomMenu;
+import com.gamesbykevin.burgertime.menu.option.*;
 
 public class NewGameConfirm extends Layer implements LayerRules
 {
@@ -25,22 +25,8 @@ public class NewGameConfirm extends Layer implements LayerRules
         //since there are options how big should the container be
         super.setOptionContainerRatio(RATIO);
         
-        //setup options (if any)
-        setup(engine);
-    }
-    
-    @Override
-    public void setup(final Engine engine) throws Exception
-    {
         //setup options here
-        Option tmp;
-        
-        tmp = new Option(CustomMenu.LayerKey.NewGameConfirmed);
-        tmp.add("Yes", null);
-        super.add(CustomMenu.OptionKey.NewGameConfim, tmp);
-        
-        tmp = new Option(CustomMenu.LayerKey.StartGame);
-        tmp.add("No", null);
-        super.add(CustomMenu.OptionKey.NewGameDeny, tmp);
+        super.add(CustomMenu.OptionKey.NewGameConfim,   new NewGameConfirmYes());
+        super.add(CustomMenu.OptionKey.NewGameDeny,     new NewGameConfirmNo());
     }
 }

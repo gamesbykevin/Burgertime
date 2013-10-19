@@ -29,7 +29,8 @@ public class CustomMenu extends Menu
     { 
         Sound, FullScreen, StartGame, Options, Controls, Instructions, Credits, GoBack, Resume, 
         NewGame, ExitGame, NewGameConfim, NewGameDeny, ExitGameConfirm, ExitGameDeny, 
-        Mode
+        
+        EnemyRespawn, EnemyLimit, Speed, HeroLives, HeroPepper, TimeLimit
     } 
     
     //unique key to indentify each Layer

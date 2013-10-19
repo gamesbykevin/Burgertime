@@ -1,6 +1,7 @@
 package com.gamesbykevin.burgertime.characters;
 
 import com.gamesbykevin.framework.input.Keyboard;
+import com.gamesbykevin.framework.util.*;
 
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
@@ -20,16 +21,42 @@ public final class Hero extends Character implements ICharacter
     private List<LevelObject> projectiles;
     
     //the number of lives
-    private int lives = 5;
+    private int lives = -1;
     
     //the number of pepper throws
-    private int pepper = 5;
+    private int pepper = -1;
+    
+    //sit there for 3 seconds after death
+    private static final long DELAY_DEATH = TimerCollection.toNanoSeconds(3000L);
+    
+    //our timer object
+    private Timer timer;
     
     public Hero()
     {
         super(Type.Hero);
         
+        //create our list for the projectiles
         this.projectiles = new ArrayList<>();
+        
+        //create our timer
+        this.timer = new Timer(DELAY_DEATH);
+        
+        //set our start location
+        reset();
+    }
+    
+    /**
+     * Reset the location
+     */
+    public void reset()
+    {
+        //reset start point
+        super.setCol(8.5);
+        super.setRow(10.5);
+        
+        //reset animation
+        setState(State.MoveSouth);
     }
     
     @Override
@@ -79,6 +106,16 @@ public final class Hero extends Character implements ICharacter
         return (lives != 0);
     }
     
+    public void setLives(final int lives)
+    {
+        this.lives = lives;
+    }
+    
+    public void setPepper(final int pepper)
+    {
+        this.pepper = pepper;
+    }
+    
     @Override
     public void update(final Engine engine) throws Exception
     {
@@ -97,7 +134,24 @@ public final class Hero extends Character implements ICharacter
             
             //don't continue if we are dead
             if (isDead())
+            {
+                //update our timer
+                timer.update(engine.getMain().getTime());
+                
+                if (timer.hasTimePassed())
+                {
+                    //lose a life
+                    this.removeLife();
+                    
+                    //reset our location
+                    this.reset();
+                    
+                    //reset the enemies as well
+                    engine.getManager().getEnemies().reset();
+                }
+                
                 return;
+            }
         }
         
         //if moving, check for collision with the board

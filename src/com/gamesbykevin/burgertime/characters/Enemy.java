@@ -37,9 +37,6 @@ public final class Enemy extends Character implements ICharacter
     {
         super(type);
         
-        //the enemies will move at a slower speed
-        super.setSpeed(Speed.SLOW);
-        
         //create a new empty list of steps representing the path
         this.steps = new ArrayList<>();
         
@@ -164,7 +161,7 @@ public final class Enemy extends Character implements ICharacter
             ai.setMap(board.getMap());
             
             //find the shortest path
-            ai.calculate();
+            ai.calculate(engine.getManager().getRandom());
             
             //get the path to the destination
             this.steps = ai.getPath();

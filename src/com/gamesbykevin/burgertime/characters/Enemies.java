@@ -1,6 +1,7 @@
 package com.gamesbykevin.burgertime.characters;
 
 import com.gamesbykevin.burgertime.board.Board;
+import com.gamesbykevin.burgertime.characters.Character.Speed;
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.food.Food;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
@@ -25,11 +26,20 @@ public final class Enemies implements Disposable, IElement
     //enemy limit, default is 1
     private int limit = 6;
     
+    //track the total number of enemies created
+    private int created = 0;
+    
     //wait 3 seconds to add each enemy
     private final long DELAY_ADD_ENEMY = TimerCollection.toNanoSeconds(3000L);
     
     //our timer to check
     private final Timer timer;
+    
+    //do enemies respawn after death
+    private boolean respawn = false;
+    
+    //the speed of our characters, default slow
+    private Speed speed = Speed.SLOW;
     
     public Enemies()
     {
@@ -66,7 +76,14 @@ public final class Enemies implements Disposable, IElement
      */
     public void reset()
     {
+        //empty our list
         this.enemies.clear();
+        
+        //reset the spawn timer
+        this.timer.reset();
+        
+        //reset number of enemies created
+        this.created = 0;
     }
     
     @Override
@@ -76,38 +93,48 @@ public final class Enemies implements Disposable, IElement
         if (engine.getManager().getHero().isDead())
             return;
         
-        //if the number of enemies is less than our limit
-        if (enemies.size() < limit)
+        //make sure the number of existing enemies is less than the limit allowed
+        if (enemies.size() < getLimit())
         {
-            //update our timer
-            timer.update(engine.getMain().getTime());
-            
-            //if time has passed
-            if (timer.hasTimePassed())
+            //if the enemies can respawn or the amount created is less than our limit
+            if (respawn || created < getLimit())
             {
-                //reset timer
-                timer.reset();
-                
-                //our random generator object
-                final Random random = engine.getManager().getRandom();
+                //update our timer
+                timer.update(engine.getMain().getTime());
 
-                //our game board object
-                final Board board = engine.getManager().getBoard();
+                //if time has passed
+                if (timer.hasTimePassed())
+                {
+                    //reset timer
+                    timer.reset();
 
-                //create random enemy
-                Enemy enemy = new Enemy(Enemy.getRandom(random));
+                    //our random generator object
+                    final Random random = engine.getManager().getRandom();
 
-                //pick random location
-                board.setRandomSpawn(random);
-                enemy.setCol(board.getCol());
-                enemy.setRow(board.getRow());
+                    //our game board object
+                    final Board board = engine.getManager().getBoard();
 
-                //set the image
-                enemy.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+                    //create random enemy
+                    Enemy enemy = new Enemy(Enemy.getRandom(random));
 
-                //add enemy to the list
-                enemies.add(enemy);
-            }
+                    //pick random location
+                    board.setRandomSpawn(random);
+                    enemy.setCol(board.getCol());
+                    enemy.setRow(board.getRow());
+
+                    //set the speed
+                    enemy.setSpeed(speed);
+                    
+                    //set the image
+                    enemy.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+
+                    //track the number of enemies created
+                    created++;
+
+                    //add enemy to the list
+                    enemies.add(enemy);
+                }
+            }            
         }
         
         for (int index = 0; index < enemies.size(); index++)
@@ -236,9 +263,24 @@ public final class Enemies implements Disposable, IElement
         }
     }
     
+    public int getLimit()
+    {
+        return this.limit;
+    }
+    
     public void setLimit(final int limit)
     {
         this.limit = limit;
+    }
+    
+    public void setSpeed(final Speed speed)
+    {
+        this.speed = speed;
+    }
+    
+    public void setRespawn(final boolean respawn)
+    {
+        this.respawn = respawn;
     }
     
     @Override
