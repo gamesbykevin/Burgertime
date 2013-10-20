@@ -21,6 +21,6 @@ public final class EnemyCount extends Option
         }
         
         //default 5 enemies
-        super.setIndex(5);
+        super.setIndex(4);
     }
 }

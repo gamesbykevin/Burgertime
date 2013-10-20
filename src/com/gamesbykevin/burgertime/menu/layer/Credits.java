@@ -3,7 +3,7 @@ package com.gamesbykevin.burgertime.menu.layer;
 import com.gamesbykevin.burgertime.resources.MenuImage;
 import com.gamesbykevin.framework.menu.Layer;
 import com.gamesbykevin.framework.util.Timer;
-import com.gamesbykevin.framework.util.TimerCollection;
+import com.gamesbykevin.framework.util.Timers;
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.menu.CustomMenu;
 
@@ -18,7 +18,7 @@ public class Credits extends Layer implements LayerRules
         setImage(engine.getResources().getMenuImage(MenuImage.Keys.Credits));
         
         //should we force the user to view this layer
-        setForce(false);
+        setForce(true);
         
         //when the layer is complete should we transition to the next or pause
         setPause(false);
@@ -27,7 +27,7 @@ public class Credits extends Layer implements LayerRules
         setNextLayer(CustomMenu.LayerKey.MainTitle);
         
         //what is the duration of the current layer
-        setTimer(new Timer(TimerCollection.toNanoSeconds(7000L)));
+        setTimer(new Timer(Timers.toNanoSeconds(6000L)));
         
         //no options here to setup
     }

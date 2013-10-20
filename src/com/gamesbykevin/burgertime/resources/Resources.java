@@ -201,9 +201,14 @@ public class Resources implements IResources
         return audio.get(TypeAudio.MenuAudio).get(key);
     }
     
-    public void playGameAudio(final Object key)
+    public void playGameAudio(final Object key, final boolean loop)
     {
-        audio.get(TypeAudio.GameAudio).play(key);
+        audio.get(TypeAudio.GameAudio).play(key, loop);
+    }
+    
+    public void stopGameAudio(final Object key)
+    {
+        audio.get(TypeAudio.GameAudio).stop(key);
     }
     
     public Font getFont(final Object key)

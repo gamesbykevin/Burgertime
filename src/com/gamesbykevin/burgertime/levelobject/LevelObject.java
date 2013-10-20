@@ -1,10 +1,11 @@
 package com.gamesbykevin.burgertime.levelobject;
 
+import com.gamesbykevin.burgertime.board.Board;
 import com.gamesbykevin.framework.base.*;
 
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.shared.IElement;
-import com.gamesbykevin.framework.util.TimerCollection;
+import com.gamesbykevin.framework.util.Timers;
 
 import java.awt.Graphics;
 import java.awt.Rectangle;
@@ -28,9 +29,17 @@ public class LevelObject extends Sprite implements IElement
         Lettuce, 
         Tomato, 
         Salt, 
+        BonusFrenchFries,
+        BonusSalt,
+        BonusCoffee,
+        BonusIceCream,
     }
     
-    private static final long DELAY = TimerCollection.toNanoSeconds(150L);
+    //delay between animations
+    private static final long DELAY = Timers.toNanoSeconds(150L);
+    
+    //each object is unique
+    private long id = System.nanoTime();
     
     public LevelObject(final Type type)
     {
@@ -51,6 +60,15 @@ public class LevelObject extends Sprite implements IElement
     public void dispose()
     {
         super.dispose();
+    }
+    
+    /**
+     * Get the unique number assigned to this object
+     * @return Id - the time stamp in nanoseconds.
+     */
+    public long getId()
+    {
+        return this.id;
     }
     
     public Type getType()
@@ -76,6 +94,17 @@ public class LevelObject extends Sprite implements IElement
     {
         super.setCol(super.getCol() + super.getVelocityX());
         super.setRow(super.getRow() + super.getVelocityY());
+    }
+    
+    /**
+     * Update the x, y coordinate based on the column, row
+     * @param sprite 
+     */
+    public static void setLocation(final Sprite sprite)
+    {
+        //now set x,y based on the column, row
+        sprite.setX((sprite.getCol() * Board.WIDTH) - (sprite.getWidth()  / 2));
+        sprite.setY((sprite.getRow() * Board.HEIGHT)- (sprite.getHeight() / 2));
     }
     
     /**
@@ -106,6 +135,22 @@ public class LevelObject extends Sprite implements IElement
                 animation.add(new Rectangle(60, 40, 20, 20), DELAY);
                 break;
                 
+            case BonusFrenchFries:
+                animation.add(new Rectangle(465, 18, 21, 21), DELAY);
+                break;
+                
+            case BonusSalt:
+                animation.add(new Rectangle(445, 39, 20, 20), DELAY);
+                break;
+                
+            case BonusCoffee:
+                animation.add(new Rectangle(446, 19, 20, 20), DELAY);
+                break;
+            
+            case BonusIceCream:
+                animation.add(new Rectangle(427, 20, 16, 20), DELAY);
+                break;
+            
             default:
                 throw new Exception("Type not setup here");
         }

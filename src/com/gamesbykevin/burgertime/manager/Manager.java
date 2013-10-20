@@ -2,20 +2,18 @@ package com.gamesbykevin.burgertime.manager;
 
 import com.gamesbykevin.framework.menu.Menu;
 import com.gamesbykevin.framework.resources.Disposable;
-import com.gamesbykevin.framework.util.Timer;
-import com.gamesbykevin.framework.util.TimerCollection;
 
 import com.gamesbykevin.burgertime.board.Board;
+import com.gamesbykevin.burgertime.bonus.Bonus;
 import com.gamesbykevin.burgertime.characters.*;
 import com.gamesbykevin.burgertime.characters.Character.Speed;
 import com.gamesbykevin.burgertime.engine.Engine;
-import com.gamesbykevin.burgertime.menu.CustomMenu.Toggle;
-import com.gamesbykevin.burgertime.menu.CustomMenu.LayerKey;
-import com.gamesbykevin.burgertime.menu.CustomMenu.OptionKey;
+import com.gamesbykevin.burgertime.menu.CustomMenu.*;
 import com.gamesbykevin.burgertime.resources.*;
 import com.gamesbykevin.burgertime.shared.IElement;
 
 import java.awt.Graphics;
+import java.awt.Image;
 import java.util.Random;
 
 /**
@@ -28,7 +26,7 @@ public final class Manager implements Disposable, IElement
     private final long seed = System.nanoTime();
     
     //random number generator object
-    public final Random random;
+    public final Random random = new Random(seed);
     
     //our Hero object
     private Hero hero;
@@ -38,6 +36,9 @@ public final class Manager implements Disposable, IElement
     
     //object that manages all the enemies
     private Enemies enemies;
+    
+    //our object that manages the bonus items
+    private Bonus bonus;
     
     /**
      * Constructor for Manager, this is the point where we load any menu option configurations
@@ -67,17 +68,25 @@ public final class Manager implements Disposable, IElement
         //the number of enemies that can be out at 1 time
         final int enemyLimit = menu.getOptionSelectionIndex(LayerKey.Options, OptionKey.EnemyLimit) + 1;
         
-        //our random number generator
-        this.random = new Random(seed);
+        //the image containing all the sprite images
+        final Image image = engine.getResources().getGameImage(GameImage.Keys.SpriteSheet);
         
-        System.out.println("Seed: " + seed);
+        //the time delay per update
+        final long time = engine.getMain().getTime();
         
         //create new game board
-        this.board = new Board(engine, random);
+        this.board = new Board(image);
+        
+        //generate new level
+        this.board.reset(random);
+        
+        //the location for the hero H.U.D.
+        final int x = 25;
+        final int y = (Board.ROWS * Board.HEIGHT) + Board.HEIGHT;
         
         //create our hero object
-        this.hero = new Hero();
-        this.hero.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+        this.hero = new Hero(time, timed, x, y);
+        this.hero.setImage(image);
 
         //set the boundaries so we know what is considered in bounds
         this.hero.setBounds(board);
@@ -104,6 +113,9 @@ public final class Manager implements Disposable, IElement
         
         //set the speed of all the enemies
         this.enemies.setSpeed(Speed.values()[speedIndex]);
+        
+        //create new bonus object
+        this.bonus = new Bonus(random, time);
     }
     
     public Enemies getEnemies()
@@ -132,7 +144,17 @@ public final class Manager implements Disposable, IElement
     @Override
     public void dispose()
     {
+        hero.dispose();
+        hero = null;
         
+        board.dispose();
+        board = null;
+        
+        enemies.dispose();
+        enemies = null;
+        
+        bonus.dispose();
+        bonus = null;
     }
     
     /**
@@ -144,14 +166,78 @@ public final class Manager implements Disposable, IElement
     @Override
     public void update(final Engine engine) throws Exception
     {
-        //update the hero
-        this.hero.update(engine);
+        //if the hero has lives the game will continue
+        if (hero.hasLives())
+        {
+            //has the board been solved
+            final boolean solved = board.hasSolved();
+
+            //update the board and its elements
+            this.board.update(engine);
+
+            //the board is now solved since the last update
+            if (!solved && board.hasSolved())
+            {
+                //stop all sound
+                engine.getResources().stopAllSound();
+
+                //play solved music
+                engine.getResources().playGameAudio(GameAudio.Keys.LevelFinish, false);
+            }
+
+            //we only update if the board is not solved
+            if (!board.hasSolved())
+            {
+                //update the hero
+                this.hero.update(engine);
+
+                //update the enemies
+                this.enemies.update(engine);
+
+                //check bonus objects
+                this.bonus.update(engine);
+            }
+            else
+            {
+                //if the time to wait after the board is solved passed
+                if (board.hasFinished())
+                {
+                    setNext();
+                    
+                    //reset any events
+                    engine.getKeyboard().reset();
+                    engine.getMouse().reset();
+                }
+            }
+        }
+    }
+    
+    /**
+     * Reset everything for the next level
+     * @throws Exception 
+     */
+    private void setNext() throws Exception
+    {
+        //generate a new board
+        board.reset(random);
+
+        //remove all enemies
+        enemies.reset();
+
+        //reset the heroes location
+        hero.resetLocation();
+
+        //reset H.U.D. display
+        hero.resetImage();
+
+        //reset the heroes timer
+        hero.resetTimer();
         
-        //update the board and its elements
-        this.board.update(engine);
-        
-        //update the enemies
-        this.enemies.update(engine);
+        //reset movement
+        hero.resetVelocity();
+
+        //reset any bonuses
+        bonus.reset();
     }
     
     /**
@@ -161,13 +247,24 @@ public final class Manager implements Disposable, IElement
     @Override
     public void render(final Graphics graphics)
     {
-        //draw the board first
-        this.board.render(graphics);
-        
-        //then draw the enemies
-        this.enemies.render(graphics);
-        
-        //then draw the hero
-        this.hero.render(graphics);
+        if (hero.hasLives())
+        {
+            //draw the board first
+            this.board.render(graphics);
+
+            //then draw the enemies
+            this.enemies.render(graphics);
+
+            //then draw the bonus object
+            this.bonus.render(graphics);
+
+            //then draw the hero
+            this.hero.render(graphics);
+        }
+        else
+        {
+            //draw game over screen
+            this.hero.renderGameOver(graphics);
+        }
     }
 }

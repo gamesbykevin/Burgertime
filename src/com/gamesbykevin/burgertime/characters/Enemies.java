@@ -29,8 +29,8 @@ public final class Enemies implements Disposable, IElement
     //track the total number of enemies created
     private int created = 0;
     
-    //wait 3 seconds to add each enemy
-    private final long DELAY_ADD_ENEMY = TimerCollection.toNanoSeconds(3000L);
+    //wait 4 seconds to add each enemy
+    private final long DELAY_ADD_ENEMY = Timers.toNanoSeconds(4000L);
     
     //our timer to check
     private final Timer timer;
@@ -105,41 +105,50 @@ public final class Enemies implements Disposable, IElement
                 //if time has passed
                 if (timer.hasTimePassed())
                 {
-                    //reset timer
-                    timer.reset();
-
-                    //our random generator object
-                    final Random random = engine.getManager().getRandom();
-
-                    //our game board object
-                    final Board board = engine.getManager().getBoard();
-
-                    //create random enemy
-                    Enemy enemy = new Enemy(Enemy.getRandom(random));
-
-                    //pick random location
-                    board.setRandomSpawn(random);
-                    enemy.setCol(board.getCol());
-                    enemy.setRow(board.getRow());
-
-                    //set the speed
-                    enemy.setSpeed(speed);
+                    final Hero hero = engine.getManager().getHero();
                     
-                    //set the image
-                    enemy.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+                    //only spawn enemy if hero is not in the first and last column
+                    if ((int)hero.getCol() > 0 && (int)hero.getCol() < Board.COLUMNS - 1)
+                    {
+                        //reset timer
+                        timer.reset();
 
-                    //track the number of enemies created
-                    created++;
+                        //our random generator object
+                        final Random random = engine.getManager().getRandom();
 
-                    //add enemy to the list
-                    enemies.add(enemy);
+                        //our game board object
+                        final Board board = engine.getManager().getBoard();
+
+                        //create random enemy
+                        Enemy enemy = new Enemy(Enemy.getRandom(random));
+
+                        //pick random location
+                        board.setRandomSpawn(random);
+                        enemy.setCol(board.getCol());
+                        enemy.setRow(board.getRow());
+
+                        //set the speed
+                        enemy.setSpeed(speed);
+
+                        //set the image
+                        enemy.setImage(engine.getResources().getGameImage(GameImage.Keys.SpriteSheet));
+
+                        //track the number of enemies created
+                        created++;
+
+                        //add enemy to the list
+                        enemies.add(enemy);
+                    }
                 }
-            }            
+            }
         }
         
         for (int index = 0; index < enemies.size(); index++)
         {
             Enemy enemy = enemies.get(index);
+            
+            if (enemy == null)
+                continue;
             
             enemy.update(engine);
             
@@ -204,12 +213,15 @@ public final class Enemies implements Disposable, IElement
     /**
      * Check the falling food piece for collision with any of the enemies
      * @param food 
+     * @return The count of the number of enemies killed
      */
-    public void checkFoodCollision(final Food food)
+    public int checkFoodCollision(final Food food)
     {
         //make sure food is falling before we check collision
         if (!food.hasVelocity())
-            return;
+            return 0;
+        
+        int count = 0;
         
         //check the list of enemies for food collision
         for (Enemy enemy : enemies)
@@ -224,11 +236,19 @@ public final class Enemies implements Disposable, IElement
                 //make sure the columns are within range
                 if (enemy.getCol() >= food.getCol() - .25 && enemy.getCol() <= food.getCol() + 1.25)
                 {
+                    //set enemy to die
                     enemy.setState(Character.State.Die);
+                    
+                    //which means no movement
                     enemy.resetVelocity();
+                    
+                    //food hit enemy
+                    count++;
                 }
             }
         }
+        
+        return count;
     }
     
     /**
@@ -250,14 +270,8 @@ public final class Enemies implements Disposable, IElement
                 //make sure the columns are within range
                 if (enemy.getCol() >= hero.getCol() - .25 && enemy.getCol() <= hero.getCol() + .25)
                 {
-                    //don't pause animation
-                    hero.getSpriteSheet().setPause(false);
-                    
-                    //set the death animation
-                    hero.setState(Character.State.Die);
-                    
-                    //can't move
-                    hero.resetVelocity();
+                    //mark the hero dead
+                    hero.markDead();
                 }
             }
         }

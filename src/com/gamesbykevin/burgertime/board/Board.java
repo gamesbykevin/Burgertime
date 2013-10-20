@@ -1,13 +1,14 @@
 package com.gamesbykevin.burgertime.board;
 
 import com.gamesbykevin.framework.resources.Disposable;
+import com.gamesbykevin.framework.util.*;
 
 import com.gamesbykevin.burgertime.characters.Character.Speed;
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.food.Food;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
 import com.gamesbykevin.burgertime.levelobject.LevelObject.Type;
-import com.gamesbykevin.burgertime.resources.GameImage;
+import com.gamesbykevin.burgertime.resources.GameAudio;
 import com.gamesbykevin.burgertime.shared.IElement;
 
 import java.awt.Graphics;
@@ -25,12 +26,28 @@ public final class Board extends Generator implements Disposable, IElement
     //image containing all board images
     private Image image;
     
-    public Board(final Engine engine, final Random random)
+    //timer to count down time till next board
+    private Timer timer;
+    
+    //time to wait until next board is created
+    private static final long DELAY_SOLVED = Timers.toNanoSeconds(4000L);
+    
+    //the score to add when an enemy is killed by falling food
+    private static final int SCORE_KILL = 500;
+    
+    //the score to add when a piece of food was placed in the container
+    private static final int SCORE_FOOD_PLACE = 50;
+    
+    public Board(final Image image)
     {
-        super(random);
+        //call parent constructor
+        super();
         
         //store sprite sheet in one place for the board
-        this.image = engine.getResources().getGameImage(GameImage.Keys.SpriteSheet);
+        this.image = image;
+        
+        //create our timer
+        this.timer = new Timer(DELAY_SOLVED);
     }
     
     /**
@@ -67,16 +84,53 @@ public final class Board extends Generator implements Disposable, IElement
         super.setRow(rows.get(index) + 0.5);
     }
     
-    
     @Override
     public void dispose()
     {
         super.dispose();
+        
+        this.image.flush();
+        this.image = null;
+        
+        this.timer = null;
+    }
+    
+    /**
+     * Check if the timer has finished when we solved the board
+     * @return 
+     */
+    public boolean hasFinished()
+    {
+        return (timer.hasTimePassed());
+    }
+    
+    /**
+     * Here a new board will be generated
+     * @param random our object to make random decisions
+     * @throws Exception 
+     */
+    public void reset(final Random random) throws Exception
+    {
+        super.generate(random);
+        
+        //reset timer
+        timer.reset();
     }
     
     @Override
     public void update(final Engine engine) throws Exception
     {
+        if (hasSolved())
+        {
+            //update timer
+            timer.update(engine.getMain().getTime());
+            
+            //since we have solved the board no need to check anything else
+            return;
+        }
+        
+        boolean playSquash = false;
+        
         for (Food food : getFoods())
         {
             //if the food isn't falling check if gravity needs to be applied
@@ -94,10 +148,17 @@ public final class Board extends Generator implements Disposable, IElement
                 else
                 {
                     //make sure the hero is moving before we check collision
-                    if (engine.getManager().getHero().hasVelocity())
+                    if (engine.getManager().getHero().hasVelocity() && !food.hasVelocity())
                     {
                         //if no velocity and no drop check for hero collision
-                        food.checkCollision(engine.getManager().getHero());
+                        final boolean result = food.checkCollision(engine.getManager().getHero());
+                        
+                        //if true we hit food
+                        if (result)
+                        {
+                            //play sound effect
+                            engine.getResources().playGameAudio(GameAudio.Keys.HitFood, false);
+                        }
                     }
                 }
                 
@@ -109,7 +170,16 @@ public final class Board extends Generator implements Disposable, IElement
             food.update();
             
             //check if the moving food collides with any of the enemies
-            engine.getManager().getEnemies().checkFoodCollision(food);
+            final int count = engine.getManager().getEnemies().checkFoodCollision(food);
+            
+            //if food killed enemy play sound effect
+            if (count > 0)
+            {
+                playSquash = true;
+                
+                //also add score for every enemy destroyed
+                engine.getManager().getHero().addScore(count * SCORE_KILL);
+            }
             
             //now we need to update y based on the row
             food.setY(food.getRow() * (double)HEIGHT);
@@ -134,8 +204,38 @@ public final class Board extends Generator implements Disposable, IElement
             }
             
             //check if the food falls into the buger container
-            checkBurgerContainer(food);
+            final boolean result = checkBurgerContainer(food);
+            
+            //if food was placed add score
+            if (result)
+                engine.getManager().getHero().addScore(SCORE_FOOD_PLACE);
         }
+        
+        //if an enemy was squashed play sound effect
+        if (playSquash)
+            engine.getResources().playGameAudio(GameAudio.Keys.EnemySquash, false);
+    }
+    
+    /**
+     * Here we will determine if the board has been solved.<br>
+     * This includes all the food pieces are below the valid rows.<br>
+     * Also none of the food is falling meaning it has found a place.
+     * @return 
+     */
+    public boolean hasSolved()
+    {
+        for (Food food : getFoods())
+        {
+            //if food is moving the board is not solved yet
+            if (food.hasVelocity())
+                return false;
+            
+            //if the food is still in the playing area the board is not solved yet
+            if (food.getRow() <= VALID_ROWS)
+                return false;
+        }
+        
+        return true;
     }
     
     /**
@@ -144,12 +244,13 @@ public final class Board extends Generator implements Disposable, IElement
      * If other food exists it will stack up
      * 
      * @param food 
+     * @return true if food was placed in container, false otherwise
      */
-    private void checkBurgerContainer(final Food food)
+    private boolean checkBurgerContainer(final Food food)
     {
         //if the food is still in the playing area no need to check if it hit the burger container
         if (food.getRow() <= VALID_ROWS)
-            return;
+            return false;
         
         //now check if hit another piece of food in the burger container
         for (Food tmp : super.getFoods())
@@ -172,7 +273,7 @@ public final class Board extends Generator implements Disposable, IElement
                 placeFood(food, tmp);
 
                 //we found a destination no need to check anything else
-                return;
+                return true;
             }
         }
 
@@ -186,8 +287,11 @@ public final class Board extends Generator implements Disposable, IElement
             placeFood(food, container);
             
             //no need to check anything else
-            return;
+            return true;
         }
+        
+        //food was not placed in container
+        return false;
     }
     
     /**
@@ -266,8 +370,8 @@ public final class Board extends Generator implements Disposable, IElement
             
             object.draw(graphics, image);
         }
-        
-        //draw all the food pieces
+
+        //finally draw all the food pieces
         for (Food food : getFoods())
         {
             food.draw(graphics, image);

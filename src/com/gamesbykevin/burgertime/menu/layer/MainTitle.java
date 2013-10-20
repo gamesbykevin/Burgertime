@@ -4,7 +4,7 @@ import com.gamesbykevin.burgertime.resources.MenuImage;
 import com.gamesbykevin.framework.menu.Layer;
 import com.gamesbykevin.framework.menu.Option;
 import com.gamesbykevin.framework.util.Timer;
-import com.gamesbykevin.framework.util.TimerCollection;
+import com.gamesbykevin.framework.util.Timers;
 
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.menu.CustomMenu;
@@ -20,7 +20,7 @@ public class MainTitle extends Layer implements LayerRules
     public MainTitle(final Engine engine) throws Exception
     {
         //the layer will have the given transition and screen size
-        super(Layer.Type.NONE, engine.getMain().getScreen());
+        super(Layer.Type.SCROLL_HORIZONTAL_WEST_REPEAT, engine.getMain().getScreen());
         
         //this layer will have a title at the top
         setTitle(Shared.GAME_NAME);
@@ -35,7 +35,7 @@ public class MainTitle extends Layer implements LayerRules
         setPause(true);
         
         //this layer will be active for x seconds
-        setTimer(new Timer(TimerCollection.toNanoSeconds(5000L)));
+        setTimer(new Timer(Timers.toNanoSeconds(2500L)));
         
         //since there are options how big should the container be
         setOptionContainerRatio(RATIO);

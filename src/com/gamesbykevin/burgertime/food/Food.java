@@ -26,9 +26,6 @@ public class Food extends LevelObject
     //each piece of food will be separate into 4 parts
     private static final int PARTS = 4;
     
-    //each food object is unique
-    private long id = System.nanoTime();
-    
     //when the food is dropping we need to record the row we can start checking for collision
     private double rowStart;
     
@@ -62,11 +59,6 @@ public class Food extends LevelObject
     public void setRowStart(final double rowStart)
     {
         this.rowStart = rowStart;
-    }
-    
-    public long getId()
-    {
-        return this.id;
     }
     
     public static List<Type> getTypeFood()
@@ -154,11 +146,18 @@ public class Food extends LevelObject
         }
     }
     
-    public void checkCollision(final Hero hero)
+    /**
+     * Check if the hero has collision with part of food<br>
+     * @param hero 
+     * @return True if collision was detected, false otherwise
+     */
+    public boolean checkCollision(final Hero hero)
     {
         //if the rows are not equal no need to check for collision
         if ((int)super.getRow() != (int)hero.getRow())
-            return;
+            return false;
+        
+        boolean collision = false;
         
         final double startCol = super.getCol();
         final double eachLength = (1.0 / intersects.size());
@@ -172,8 +171,16 @@ public class Food extends LevelObject
             final double start = startCol + (index * eachLength);
             final double end = start + eachLength;
             
-            intersects.set(index, hero.getCol() >= start && hero.getCol() <= end);
+            final boolean result = (hero.getCol() >= start && hero.getCol() <= end);
+            
+            if (result)
+                collision = true;
+            
+            intersects.set(index, result);
         }
+        
+        //return our findings
+        return collision;
     }
     
     @Override

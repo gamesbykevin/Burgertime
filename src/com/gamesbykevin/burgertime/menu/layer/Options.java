@@ -5,7 +5,7 @@ import com.gamesbykevin.burgertime.resources.MenuImage;
 import com.gamesbykevin.framework.menu.*;
 import com.gamesbykevin.framework.resources.Audio;
 import com.gamesbykevin.framework.util.Timer;
-import com.gamesbykevin.framework.util.TimerCollection;
+import com.gamesbykevin.framework.util.Timers;
 
 import com.gamesbykevin.burgertime.engine.Engine;
 import com.gamesbykevin.burgertime.characters.Character.*;
@@ -27,7 +27,7 @@ public class Options extends Layer implements LayerRules
         setImage(engine.getResources().getMenuImage(MenuImage.Keys.TitleBackground));
         
         //what is the duration of the current layer
-        setTimer(new Timer(TimerCollection.toNanoSeconds(5000L)));
+        setTimer(new Timer(Timers.toNanoSeconds(5000L)));
         
         //should we force the user to view this layer
         setForce(false);

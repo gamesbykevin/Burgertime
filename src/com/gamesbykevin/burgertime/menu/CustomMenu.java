@@ -2,6 +2,7 @@ package com.gamesbykevin.burgertime.menu;
 
 import com.gamesbykevin.burgertime.menu.layer.*;
 import com.gamesbykevin.burgertime.engine.Engine;
+import com.gamesbykevin.burgertime.shared.IElement;
 
 import com.gamesbykevin.framework.display.FullScreen;
 import com.gamesbykevin.framework.menu.*;
@@ -13,7 +14,7 @@ import java.awt.event.KeyEvent;
  * Custom menu setup
  * @author GOD
  */
-public class CustomMenu extends Menu
+public class CustomMenu extends Menu implements IElement
 {
     //reset = create a new game
     private boolean reset = true;
@@ -50,10 +51,10 @@ public class CustomMenu extends Menu
         Off, On
     }
     
-    //is sound enabled
+    //is sound enabled, default true
     private Toggle sound = Toggle.On;
     
-    //is full screen enabled
+    //is full screen enabled, default false
     private Toggle fullWindow = Toggle.Off;
     
     //does the container have focus
@@ -71,7 +72,6 @@ public class CustomMenu extends Menu
         super.add(LayerKey.Options,         new Options(engine));
         super.add(LayerKey.Controls1,       new Controls1(engine));
         super.add(LayerKey.Instructions1,   new Instructions1(engine));
-        super.add(LayerKey.Instructions2,   new Instructions2(engine));
         super.add(LayerKey.OptionsInGame,   new OptionsInGame(engine));
         super.add(LayerKey.NewGameConfirm,  new NewGameConfirm(engine));
         super.add(LayerKey.ExitGameConfirm, new ExitGameConfirm(engine));
@@ -92,6 +92,7 @@ public class CustomMenu extends Menu
      * 
      * @throws Exception 
      */
+    @Override
     public void update(final Engine engine) throws Exception
     {
         //if the menu is not on the last layer we need to check for changes made in the menu
@@ -124,16 +125,18 @@ public class CustomMenu extends Menu
             //if starting a new game change layer, stop all sound
             if (super.hasCurrent(LayerKey.NewGameConfirmed))
             {
+                //go to specified layer
                 super.setLayer(LayerKey.StartGame);
+                
+                //mark flag that we can reset
                 reset = true;
+                
+                //stop all sound
                 engine.getResources().stopAllSound();
             }
             
             //set all audio collections sound enabled on/off
             engine.getResources().setAudioEnabled(Toggle.On == tmpSound);
-                
-            //make sure this Option in all of the Layer(s) have the same value
-            setOptionSelectionIndex(OptionKey.Sound, (tmpSound == Toggle.Off) ? 0 : 1);
                 
             //if the sound is off make sure all sounds stop
             if (Toggle.Off == tmpSound)
@@ -153,11 +156,11 @@ public class CustomMenu extends Menu
                 if (fullScreen == null)
                     fullScreen = new FullScreen();
 
+                //switch from fullscreen to window or vice versa
                 fullScreen.switchFullScreen(engine.getMain().getApplet(), engine.getMain().getPanel());
+                
+                //grab the rectangle coordinates of the full screen
                 engine.getMain().setFullScreen();
-
-                //make sure this Option in all of the Layer(s) have the same value
-                //setOptionSelectionIndex(OptionKey.FullScreen, fullscreenIndex);
 
                 this.fullWindow = tmpFullWindow;
             }
@@ -189,6 +192,10 @@ public class CustomMenu extends Menu
                 this.focus = tmpFocus;
             }
             
+            //make sure this Option in all of the Layer(s) have the same value
+            setOptionSelectionIndex(OptionKey.Sound, (tmpSound == Toggle.Off) ? 0 : 1);
+            setOptionSelectionIndex(OptionKey.FullScreen, (tmpFullWindow == Toggle.Off) ? 0 : 1);
+            
             super.update(engine.getMouse(), engine.getKeyboard(), engine.getMain().getTime());
         }
         else
@@ -215,7 +222,7 @@ public class CustomMenu extends Menu
     }
     
     @Override
-    public void render(Graphics graphics) throws Exception
+    public void render(final Graphics graphics)
     {
         super.render(graphics);
     }

@@ -28,7 +28,7 @@ public final class Enemy extends Character implements ICharacter
     private AStar ai;
     
     //the time to remain stunned
-    private static final long DELAY_STUNNED = TimerCollection.toNanoSeconds(3000L);
+    private static final long DELAY_STUNNED = Timers.toNanoSeconds(3000L);
     
     //timer for tracking stun time
     private Timer timer;

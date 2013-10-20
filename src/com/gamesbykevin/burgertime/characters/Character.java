@@ -6,7 +6,7 @@ import com.gamesbykevin.framework.resources.Disposable;
 import com.gamesbykevin.burgertime.board.Board;
 import com.gamesbykevin.burgertime.levelobject.LevelObject;
 import com.gamesbykevin.burgertime.levelobject.LevelObject.Type;
-import com.gamesbykevin.framework.util.TimerCollection;
+import com.gamesbykevin.framework.util.Timers;
 
 import java.awt.Rectangle;
 
@@ -17,10 +17,10 @@ import java.awt.Rectangle;
 public abstract class Character extends LevelObject implements Disposable
 {
     //time delays
-    private static final long DELAY_DEFAULT = TimerCollection.toNanoSeconds(125L);
-    private static final long DELAY_DEFAULT_DEATH = TimerCollection.toNanoSeconds(200L);
-    private static final long DELAY_DEFAULT_ENEMY = TimerCollection.toNanoSeconds(125L);
-    private static final long DELAY_DEFAULT_STUNNED = TimerCollection.toNanoSeconds(333L);
+    private static final long DELAY_DEFAULT = Timers.toNanoSeconds(125L);
+    private static final long DELAY_DEFAULT_DEATH = Timers.toNanoSeconds(200L);
+    private static final long DELAY_DEFAULT_ENEMY = Timers.toNanoSeconds(125L);
+    private static final long DELAY_DEFAULT_STUNNED = Timers.toNanoSeconds(333L);
     
     //all characters have the same width/height
     protected static final int DIMENSION = 20;
@@ -45,7 +45,7 @@ public abstract class Character extends LevelObject implements Disposable
      */
     public enum Speed
     {
-        SLOW(.02), MEDIUM(.025), FAST(.03), FASTEST(.04);
+        SLOW(.02), MEDIUM(.025), FAST(.03), FASTEST(.08);
         
         private Speed(final double velocity)
         {
@@ -134,8 +134,7 @@ public abstract class Character extends LevelObject implements Disposable
         getSpriteSheet().update(time);
         
         //now set x,y based on the column, row
-        super.setX((super.getCol() * Board.WIDTH) - (getWidth()  / 2));
-        super.setY((super.getRow() * Board.HEIGHT)- (getHeight() / 2));
+        LevelObject.setLocation(this);
         
         //update location
         super.update();

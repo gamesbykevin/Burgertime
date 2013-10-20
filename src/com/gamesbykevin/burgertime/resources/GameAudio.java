@@ -17,7 +17,7 @@ public class GameAudio extends AudioManager
     
     public enum Keys
     {
-        Sound1, 
+        Intro, Theme, Death, LevelFinish, EnemySquash, ThrowPepper, CollectBonus, HitFood
     }
     
     public GameAudio() throws Exception

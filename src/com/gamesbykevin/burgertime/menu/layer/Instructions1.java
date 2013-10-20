@@ -16,7 +16,7 @@ public class Instructions1 extends Layer implements LayerRules
         setImage(engine.getResources().getMenuImage(MenuImage.Keys.Instructions1));
         
         //what is the next layer
-        setNextLayer(CustomMenu.LayerKey.Instructions2);
+        setNextLayer(CustomMenu.LayerKey.MainTitle);
         
         //should we force the user to view this layer
         setForce(false);

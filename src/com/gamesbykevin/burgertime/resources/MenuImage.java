@@ -19,7 +19,7 @@ public class MenuImage extends ImageManager
     {
         TitleScreen, Credits, AppletFocus, TitleBackground, Mouse, MouseDrag, 
         Controls1,  
-        Instructions1, Instructions2, 
+        Instructions1,  
     }
     
     public MenuImage() throws Exception
